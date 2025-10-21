@@ -27,4 +27,6 @@ def generate_positions(clients_df):
     print(f"Generated {len(positions)} positions")
     return df
 
-if __name__ == "__main__
+if __name__ == "__main__":
+    clients_df = pd.read_csv('../raw/clients.csv')
+    generate_positions(clients_df)
