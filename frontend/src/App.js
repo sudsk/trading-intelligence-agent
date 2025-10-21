@@ -3,6 +3,7 @@ import { clientsAPI } from './services/api';
 import { useSSE } from './hooks/useSSE';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
+import AlertBanner from './components/AlertBanner'; 
 import ProfileCard from './components/ProfileCard';
 import MediaRibbon from './components/MediaRibbon';
 import Timeline from './components/Timeline';
