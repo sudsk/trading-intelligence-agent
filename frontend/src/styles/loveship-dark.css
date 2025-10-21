@@ -1,0 +1,485 @@
+/* EPAM Loveship Dark Theme - Complete Styling */
+
+:root {
+    /* Fonts */
+    --uui-font: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --uui-font-mono: 'Roboto Mono', monospace;
+    
+    /* Grid System */
+    --uui-grid-unit: 6px;
+    --uui-border-radius: 3px;
+    
+    /* Base Colors */
+    --black: #000000;
+    --white: #FFFFFF;
+    
+    /* Night Palette */
+    --night50: #FAFAFC;
+    --night100: #E1E3EB;
+    --night200: #ACAFBF;
+    --night300: #6C6F80;
+    --night400: #585B69;
+    --night500: #474A59;
+    --night600: #383B4A;
+    --night700: #303240;
+    --night800: #272833;
+    --night900: #1D1E26;
+    
+    /* Sky Palette */
+    --sky-50: #008ACE;
+    --sky-60: #48A4D0;
+    --sky-70: #7DBCDB;
+    
+    /* Grass Palette */
+    --grass-50: #669900;
+    --grass-60: #83B918;
+    --grass-70: #A6D151;
+    
+    /* Fire Palette */
+    --fire-50: #CC482D;
+    --fire-60: #E56248;
+    --fire-70: #F78C77;
+    
+    /* Sun Palette */
+    --sun-50: #F1A105;
+    --sun-60: #F4B83A;
+    --sun-70: #FFD06D;
+    
+    /* Neutral Colors */
+    --uui-neutral-0: var(--white);
+    --uui-neutral-5: var(--night50);
+    --uui-neutral-10: var(--night100);
+    --uui-neutral-20: var(--night200);
+    --uui-neutral-30: var(--night300);
+    --uui-neutral-40: var(--night400);
+    --uui-neutral-50: var(--night500);
+    --uui-neutral-60: var(--night600);
+    --uui-neutral-70: var(--night700);
+    --uui-neutral-80: var(--night800);
+    --uui-neutral-90: var(--night900);
+    --uui-neutral-100: var(--black);
+    
+    /* Semantic Colors */
+    --uui-primary-50: var(--sky-50);
+    --uui-primary-60: var(--sky-60);
+    --uui-primary-70: var(--sky-70);
+    
+    --uui-success-50: var(--grass-50);
+    --uui-success-60: var(--grass-60);
+    --uui-success-70: var(--grass-70);
+    
+    --uui-warning-50: var(--sun-50);
+    --uui-warning-60: var(--sun-60);
+    --uui-warning-70: var(--sun-70);
+    
+    --uui-critical-50: var(--fire-50);
+    --uui-critical-60: var(--fire-60);
+    --uui-critical-70: var(--fire-70);
+    
+    --uui-info-50: var(--sky-50);
+    --uui-info-60: var(--sky-60);
+    --uui-info-70: var(--sky-70);
+    
+    /* Surface Colors */
+    --uui-app-bg: var(--uui-neutral-90);
+    --uui-surface-main: var(--uui-neutral-80);
+    --uui-surface-higher: var(--uui-neutral-70);
+    --uui-surface-sunken: var(--uui-neutral-60);
+    
+    /* Text Colors */
+    --uui-text-primary: var(--uui-neutral-5);
+    --uui-text-secondary: var(--uui-neutral-10);
+    --uui-text-tertiary: var(--uui-neutral-20);
+    --uui-text-disabled: var(--uui-neutral-30);
+    
+    /* Shadows */
+    --uui-shadow-level-1: 0 0 4px rgba(0, 0, 0, 0.2), 0 3px 6px rgba(0, 0, 0, 0.2);
+    --uui-shadow-level-2: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 22px 3px rgba(0, 0, 0, 0.26);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--uui-font);
+    background: var(--uui-app-bg);
+    color: var(--uui-text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+.header {
+    background: var(--uui-neutral-70);
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--uui-neutral-60);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 48px;
+}
+
+.logo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--uui-text-primary);
+    display: flex;
+    align-items: center;
+}
+
+.header-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.force-event-btn {
+    background: var(--uui-critical-60);
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--uui-border-radius);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: background 0.2s ease;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--uui-font);
+}
+
+.force-event-btn:hover {
+    background: var(--uui-critical-50);
+}
+
+/* Main Layout */
+.main-container {
+    display: flex;
+    height: calc(100vh - 48px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 320px;
+    background: var(--uui-neutral-80);
+    border-right: 1px solid var(--uui-neutral-60);
+    overflow-y: auto;
+}
+
+.list-header {
+    padding: 18px;
+    background: var(--uui-neutral-70);
+    border-bottom: 1px solid var(--uui-neutral-60);
+}
+
+.list-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--uui-text-primary);
+    margin-bottom: 3px;
+}
+
+.client-list {
+    padding: 12px;
+}
+
+.client-item {
+    background: var(--uui-neutral-70);
+    border: 1px solid var(--uui-neutral-60);
+    border-radius: var(--uui-border-radius);
+    padding: 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.client-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: transparent;
+    border-radius: var(--uui-border-radius) 0 0 var(--uui-border-radius);
+    transition: background 0.2s ease;
+}
+
+.client-item.active {
+    background: var(--uui-neutral-60);
+    border-color: var(--uui-primary-60);
+}
+
+.client-item.active::before {
+    background: var(--uui-primary-60);
+}
+
+.client-item:hover {
+    background: var(--uui-neutral-60);
+}
+
+.client-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 3px;
+    color: var(--uui-text-primary);
+}
+
+.client-segment {
+    font-size: 12px;
+    color: var(--uui-text-secondary);
+    margin-bottom: 6px;
+}
+
+.client-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-tag {
+    font-size: 11px;
+    color: var(--uui-text-tertiary);
+}
+
+.switch-prob {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.switch-prob-value {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.prob-high { color: var(--uui-critical-60); }
+.prob-medium { color: var(--uui-warning-60); }
+.prob-low { color: var(--uui-info-60); }
+
+.trend-arrow {
+    font-size: 12px;
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background: var(--uui-app-bg);
+}
+
+/* Alert Banner */
+.alert-banner {
+    background: color-mix(in srgb, var(--uui-critical-60) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--uui-critical-60) 30%, transparent);
+    border-radius: 6px;
+    padding: 12px 18px;
+    margin-bottom: 24px;
+    display: none;
+}
+
+.alert-banner.active {
+    display: block;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.alert-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+}
+
+.alert-text {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+}
+
+.alert-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.alert-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 3px;
+}
+
+.alert-message {
+    font-size: 12px;
+    color: var(--uui-text-secondary);
+}
+
+/* Card */
+.card {
+    background: var(--uui-surface-main);
+    border: 1px solid var(--uui-neutral-60);
+    border-radius: 6px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--uui-text-primary);
+    margin-bottom: 6px;
+}
+
+.card-subtitle {
+    font-size: 12px;
+    color: var(--uui-text-secondary);
+}
+
+.badge {
+    background: color-mix(in srgb, var(--uui-primary-60) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--uui-primary-60) 30%, transparent);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--uui-primary-50);
+}
+
+/* Metrics */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.metric {
+    background: var(--uui-neutral-70);
+    padding: 18px;
+    border-radius: var(--uui-border-radius);
+    border: 1px solid var(--uui-neutral-60);
+}
+
+.metric-label {
+    font-size: 11px;
+    color: var(--uui-text-secondary);
+    margin-bottom: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--uui-text-primary);
+}
+
+/* Chips */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip {
+    background: var(--uui-neutral-70);
+    border: 1px solid var(--uui-neutral-60);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--uui-text-secondary);
+}
+
+.section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--uui-text-primary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Media */
+.media-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.media-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--uui-text-primary);
+}
+
+.media-pressure {
+    padding: 3px 9px;
+    border-radius: var(--uui-border-radius);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pressure-high {
+    background: color-mix(in srgb, var(--uui-critical-60) 15%, transparent);
+    color: var(--uui-critical-60);
+    border: 1px solid color-mix(in srgb, var(--uui-critical-60) 30%, transparent);
+}
+
+.pressure-medium {
+    background: color-mix(in srgb, var(--uui-warning-60) 15%, transparent);
+    color: var(--uui-warning-60);
+    border: 1px solid color-mix(in srgb, var(--uui-warning-60) 30%, transparent);
+}
+
+.pressure-low {
+    background: color-mix(in srgb, var(--uui-info-60) 15%, transparent);
+    color: var(--uui-info-60);
+    border: 1px solid color-mix(in srgb, var(--uui-info-60) 30%, transparent);
+}
+
+.headlines {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+.headline-card {
+    min-width: 280px;
+    background: var(--uui-neutral-70);
+    border:
