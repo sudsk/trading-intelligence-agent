@@ -1,7 +1,10 @@
 """
-Data Service for API Façade
+Data Service for API Façade - CORRECTED for actual schema
 
-Handles database operations for actions, insights, and client queries.
+Works with:
+- switch_probability_history table
+- alerts table (not insights)
+- actions table with UUID
 """
 import os
 import psycopg2
@@ -49,7 +52,7 @@ class DataService:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            query = "SELECT client_id, name, rm, sector FROM clients WHERE client_id = %s"
+            query = "SELECT client_id, name, rm, sector, segment FROM clients WHERE client_id = %s"
             cursor.execute(query, (client_id,))
             row = cursor.fetchone()
             
@@ -61,7 +64,8 @@ class DataService:
                     'clientId': row[0],
                     'name': row[1],
                     'rm': row[2],
-                    'sector': row[3]
+                    'sector': row[3],
+                    'segment': row[4]
                 }
             return None
             
@@ -80,34 +84,42 @@ class DataService:
         try:
             conn = self._get_connection()
             
+            # Get latest switch probability from history table
             query = """
-                SELECT 
-                    client_id,
-                    name,
-                    rm,
-                    sector,
-                    segment,
-                    switch_probability as "switchProbability"
-                FROM clients
+                SELECT DISTINCT ON (c.client_id)
+                    c.client_id,
+                    c.name,
+                    c.rm,
+                    c.sector,
+                    c.segment,
+                    sph.switch_prob as "switchProbability"
+                FROM clients c
+                LEFT JOIN LATERAL (
+                    SELECT switch_prob
+                    FROM switch_probability_history
+                    WHERE client_id = c.client_id
+                    ORDER BY computed_at DESC
+                    LIMIT 1
+                ) sph ON true
                 WHERE 1=1
             """
             
             params = []
             
             if search:
-                query += " AND (name ILIKE %s OR client_id ILIKE %s)"
+                query += " AND (c.name ILIKE %s OR c.client_id ILIKE %s)"
                 search_term = f"%{search}%"
                 params.extend([search_term, search_term])
             
             if segment:
-                query += " AND segment = %s"
+                query += " AND c.segment = %s"
                 params.append(segment)
             
             if rm:
-                query += " AND rm = %s"
+                query += " AND c.rm = %s"
                 params.append(rm)
             
-            query += " ORDER BY switch_probability DESC LIMIT %s"
+            query += " ORDER BY c.client_id, sph.switch_prob DESC NULLS LAST LIMIT %s"
             params.append(limit)
             
             df = pd.read_sql(query, conn, params=params if params else None)
@@ -143,7 +155,7 @@ class DataService:
             return pd.DataFrame()
     
     # ========================================================================
-    # Timeline & Insights
+    # Timeline & Alerts (not insights!)
     # ========================================================================
     
     def get_client_timeline(
@@ -199,22 +211,28 @@ class DataService:
         client_id: str,
         limit: int = 20
     ) -> List[dict]:
-        """Get recent insights/actions."""
+        """
+        Get recent alerts for client (using alerts table).
+        
+        Note: Your schema uses 'alerts' not 'insights'
+        """
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
             query = """
                 SELECT 
-                    insight_id,
-                    type,
-                    title,
-                    description,
-                    timestamp,
-                    severity
-                FROM insights
+                    id,
+                    alert_type,
+                    old_switch_prob,
+                    new_switch_prob,
+                    reason,
+                    severity,
+                    acknowledged,
+                    created_at
+                FROM alerts
                 WHERE client_id = %s
-                ORDER BY timestamp DESC
+                ORDER BY created_at DESC
                 LIMIT %s
             """
             
@@ -224,12 +242,13 @@ class DataService:
             insights = []
             for row in rows:
                 insights.append({
-                    'insightId': row[0],
-                    'type': row[1],
-                    'title': row[2],
-                    'description': row[3],
-                    'timestamp': row[4].isoformat() if row[4] else None,
-                    'severity': row[5]
+                    'insightId': str(row[0]),
+                    'type': 'ALERT',  # Map to insight type
+                    'title': row[1],  # alert_type becomes title
+                    'description': row[4],  # reason becomes description
+                    'timestamp': row[7].isoformat() if row[7] else None,
+                    'severity': row[5],
+                    'acknowledged': row[6]
                 })
             
             cursor.close()
@@ -247,54 +266,55 @@ class DataService:
     
     def log_action(
         self,
-        action_id: str,
+        action_id: str,  # Will be ignored, using UUID
         client_id: str,
         action_type: str,
         title: str,
         description: Optional[str] = None,
         products: Optional[List[str]] = None,
         rm: Optional[str] = None
-    ) -> None:
+    ) -> str:
         """
         Log an action to database.
         
-        Args:
-            action_id: Unique action identifier
-            client_id: Client identifier
-            action_type: Type of action (PROACTIVE_OUTREACH, etc.)
-            title: Action title
-            description: Detailed description
-            products: List of products proposed
-            rm: Relationship manager who took action
+        Returns:
+            Generated UUID
         """
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
+            # Note: id is auto-generated as UUID
             query = """
                 INSERT INTO actions 
-                (action_id, client_id, action_type, title, description, products, rm, timestamp)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (client_id, action_type, product, description, status)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
             """
             
-            products_str = ','.join(products) if products else None
+            # Combine products into single string (schema has single 'product' column)
+            product_str = ', '.join(products) if products else None
+            
+            # Use title as part of description if description not provided
+            full_description = description if description else title
             
             cursor.execute(query, (
-                action_id,
                 client_id,
                 action_type,
-                title,
-                description,
-                products_str,
-                rm,
-                datetime.utcnow()
+                product_str,
+                full_description,
+                'pending'
             ))
+            
+            generated_id = cursor.fetchone()[0]
             
             conn.commit()
             cursor.close()
             conn.close()
             
-            logger.info(f"✅ Action logged: {action_id}")
+            logger.info(f"✅ Action logged: {generated_id}")
+            
+            return str(generated_id)
             
         except Exception as e:
             logger.error(f"Error logging action: {e}")
@@ -312,17 +332,16 @@ class DataService:
             
             query = """
                 SELECT 
-                    action_id,
+                    id,
                     action_type,
-                    title,
+                    product,
                     description,
-                    products,
-                    rm,
-                    timestamp,
-                    outcome
+                    status,
+                    outcome,
+                    created_at
                 FROM actions
                 WHERE client_id = %s
-                ORDER BY timestamp DESC
+                ORDER BY created_at DESC
                 LIMIT %s
             """
             
@@ -332,14 +351,13 @@ class DataService:
             actions = []
             for row in rows:
                 actions.append({
-                    'actionId': row[0],
+                    'actionId': str(row[0]),
                     'actionType': row[1],
-                    'title': row[2],
+                    'products': row[2].split(', ') if row[2] else [],
                     'description': row[3],
-                    'products': row[4].split(',') if row[4] else [],
-                    'rm': row[5],
-                    'timestamp': row[6].isoformat() if row[6] else None,
-                    'outcome': row[7]
+                    'status': row[4],
+                    'outcome': row[5],
+                    'timestamp': row[6].isoformat() if row[6] else None
                 })
             
             cursor.close()
@@ -359,24 +377,24 @@ class DataService:
         description: str,
         severity: str = 'INFO'
     ) -> None:
-        """Add an insight to the feed."""
+        """
+        Add an alert (your schema uses alerts, not insights).
+        """
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
             query = """
-                INSERT INTO insights 
-                (client_id, type, title, description, severity, timestamp)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO alerts 
+                (client_id, alert_type, reason, severity)
+                VALUES (%s, %s, %s, %s)
             """
             
             cursor.execute(query, (
                 client_id,
-                type,
-                title,
-                description,
-                severity,
-                datetime.utcnow()
+                title,  # alert_type
+                description,  # reason
+                severity
             ))
             
             conn.commit()
@@ -384,5 +402,5 @@ class DataService:
             conn.close()
             
         except Exception as e:
-            logger.error(f"Error adding insight: {e}")
-            # Don't raise - insights are nice-to-have
+            logger.error(f"Error adding alert: {e}")
+            # Don't raise - alerts are nice-to-have
