@@ -1,4 +1,4 @@
-# Trading Intelligence Agent - Pure Gemini Implementation
+# Trading Intelligence Agent 
 
 ## 🎯 Overview
 
