@@ -48,8 +48,8 @@ if [ -z "$DATABASE_URL" ]; then
     fi
 fi
 
-# Navigate to service directory
-cd "$(dirname "$0")/api-facade"
+# Navigate to service directory (from deploy/ to api-facade/)
+cd "$(dirname "$0")/../api-facade"
 
 echo ""
 echo -e "${BLUE}Building and deploying...${NC}"
