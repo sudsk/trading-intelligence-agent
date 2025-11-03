@@ -4,13 +4,6 @@
 
 A **Trading Intelligence Agent** that uses **Gemini Flash 2.5** to analyze client trading behavior, media sentiment, and generate relationship manager recommendations. Built with clean separation for easy migration from Cloud Run to Vertex AI Agent Engine.
 
-### Key Features
-- ✅ **Pure Gemini Agents**: All 3 specialist agents use Gemini as reasoning engine (no ML models)
-- ✅ **Clean Architecture**: Separated API façade and agents-service
-- ✅ **Agent Engine Ready**: Easy migration path from Cloud Run → Agent Engine
-- ✅ **Production Code**: Error handling, logging, fallbacks, health checks
-- ✅ **85% Complete**: Agents service fully functional, API façade 70% done
-
 ---
 
 ## 📐 Architecture
@@ -72,20 +65,20 @@ A **Trading Intelligence Agent** that uses **Gemini Flash 2.5** to analyze clien
 │   ├── requirements.txt
 │   └── .env.example
 │
-├── api-facade/                      # ⏳ 70% COMPLETE
+├── api-facade/                      
 │   ├── main.py                      # FastAPI app
 │   ├── routes/
-│   │   ├── clients.py              # ⏳ TODO
-│   │   ├── actions.py              # ⏳ TODO
-│   │   ├── alerts.py               # ⏳ TODO
-│   │   └── demo.py                 # ⏳ TODO
+│   │   ├── clients.py              
+│   │   ├── actions.py              
+│   │   ├── alerts.py               
+│   │   └── demo.py                 
 │   ├── services/
-│   │   ├── agent_client.py         # ✅ HTTP client to agents-service
-│   │   ├── alert_queue.py          # ⏳ TODO
-│   │   └── data_service.py         # ⏳ TODO
-│   ├── Dockerfile                   # ⏳ TODO
-│   ├── requirements.txt             # ⏳ TODO
-│   └── .env.example                 # ⏳ TODO
+│   │   ├── agent_client.py         # HTTP client to agents-service
+│   │   ├── alert_queue.py          
+│   │   └── data_service.py         
+│   ├── Dockerfile                   
+│   ├── requirements.txt             
+│   └── .env.example                 
 │
 ├── BUILD_COMPLETE.md               # Comprehensive status
 ├── IMPLEMENTATION_STATUS.md        # Detailed progress
@@ -338,28 +331,6 @@ class NewAgent:
 
 ---
 
-## 📊 Status
-
-### ✅ Complete (85%)
-- Shared contracts
-- Agents service (100%)
-- Segmentation Agent
-- Media Fusion Agent
-- NBA Agent
-- Orchestrator Agent
-- Data Service
-- Agent Client
-
-### ⏳ Remaining (15%)
-- API façade routes (4 files)
-- API façade services (2 files)
-- API façade deployment configs
-- Frontend Force Event wiring
-
-**Estimated Time to 100%:** 3-4 hours
-
----
-
 ## 🧪 Testing
 
 ### Test Individual Agents
@@ -421,50 +392,8 @@ response = await agent_engine_client.invoke(
 
 ---
 
-## 🎯 Key Design Decisions
-
-1. **Pure Gemini Agents**: No ML models, just Gemini reasoning
-2. **Structured Outputs**: JSON schema enforcement
-3. **Fallback Mechanisms**: Rule-based fallbacks when Gemini unavailable
-4. **Clean Separation**: API façade ↔ Agents service
-5. **Type Safety**: Pydantic contracts everywhere
-6. **Production Ready**: Error handling, logging, health checks
-
----
-
-## 🤝 Contributing
-
-1. Complete API façade routes
-2. Add more tests
-3. Improve prompts (few-shot examples)
-4. Add more segments
-5. Enhance playbooks
-
----
-
 ## 📝 License
 
 [Your License]
 
----
 
-## 🙏 Acknowledgments
-
-Built with:
-- FastAPI
-- Google Gemini Flash 2.5
-- PostgreSQL
-- React
-
----
-
-## 📞 Support
-
-For questions or issues, see:
-- BUILD_COMPLETE.md
-- IMPLEMENTATION_STATUS.md
-- Code comments
-
----
-
-**Status:** 85% Complete | **Ready:** Agents Service | **Next:** API Façade Routes
