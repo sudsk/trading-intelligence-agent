@@ -42,8 +42,8 @@ if [ -z "$DATABASE_URL" ]; then
     fi
 fi
 
-# Navigate to service directory
-cd "$(dirname "$0")/agents-service"
+# Navigate to service directory (from deploy/ to agents-service/)
+cd "$(dirname "$0")/../agents-service"
 
 echo ""
 echo -e "${BLUE}Building and deploying...${NC}"
