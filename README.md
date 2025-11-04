@@ -113,7 +113,6 @@
 **Key Features:**
 - Structured JSON output (`response_mime_type="application/json"`)
 - Temperature: 0.3 (consistent classification)
-- Fallback heuristics if Gemini unavailable
 - Few-shot examples in prompts
 
 ---
@@ -139,7 +138,6 @@
 - Batch processing (efficient)
 - Trader-focused sentiment (not general news)
 - Temperature: 0.2 (consistent scoring)
-- Fallback keyword-based sentiment
 
 ---
 
