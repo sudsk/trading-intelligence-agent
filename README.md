@@ -44,7 +44,6 @@
 ## 📂 Project Structure
 
 ```
-/outputs/
 ├── shared/
 │   └── agent_contracts.py          # Type-safe contracts between services
 │
@@ -84,16 +83,17 @@
 │   ├── requirements.txt             
 │   └── .env.example                 
 │
-├── BUILD_COMPLETE.md               # Comprehensive status
-├── IMPLEMENTATION_STATUS.md        # Detailed progress
-└── BUILD_PROGRESS.md               # Quick reference
+├── docs/
+    ├── QUICKSTART.md               
+    ├── INDEX.md        
+    └── PROJECT_SUMMARY.md               
 ```
 
 ---
 
 ## 🤖 Agent Details
 
-### 1. Segmentation Agent (Pure Gemini)
+### 1. Segmentation Agent 
 
 **Purpose:** Classify clients into 4 trading segments
 
@@ -118,7 +118,7 @@
 
 ---
 
-### 2. Media Fusion Agent (Pure Gemini)
+### 2. Media Fusion Agent 
 
 **Purpose:** Analyze financial news sentiment
 
@@ -143,7 +143,7 @@
 
 ---
 
-### 3. NBA Agent (Pure Gemini)
+### 3. NBA Agent 
 
 **Purpose:** Generate relationship manager recommendations
 
@@ -365,9 +365,7 @@ python -m pytest tests/test_segmentation_agent.py
 
 ## 📚 Documentation
 
-- **BUILD_COMPLETE.md** - Comprehensive status and next steps
-- **IMPLEMENTATION_STATUS.md** - Detailed progress breakdown
-- **BUILD_PROGRESS.md** - Quick reference
+- **QUICKSTART.md** - Quickstart
 - Code is extensively commented
 
 ---
