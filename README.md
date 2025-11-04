@@ -2,40 +2,44 @@
 
 ## 🎯 Overview
 
-A **Trading Intelligence Agent** that uses **Gemini Flash 2.5** to analyze client trading behavior, media sentiment, and generate relationship manager recommendations. Built with clean separation for easy migration from Cloud Run to Vertex AI Agent Engine.
+**What it is:** A Trading Intelligence Agent delivered as a standalone React web app. It profiles each client (Trend Follower / Trend Setter / Mean-Reverter / Hedger), estimates Switch Probability (14d), and surfaces Next Best Actions for the desk. Advisory only—no execution.
+
+**Who cares:** Sales & trading leads, RMs, sales-traders, desk heads—anyone prioritising outreach timing and product pitching.
+
+**What they see (UI):**
+
+**Strategy Profile card:** Segment, confidence, top drivers, risk flags, switch probability.
+
+**Media ribbon:** last 3 headlines + sentiment and a Media Pressure chip.
+
+**Timeline:** historical strategy regimes (6–12 months) with event windows.
+
+**Insights feed:** Signals, Actions, Outcomes.
+
+**List view:** “Clients with Rising Switch Risk,” sortable/filterable.
+
+**Action bar:** one-click Create Task, Share Summary, Propose Product (logged in-app).
+
+**Data (mocked but credible):** trades, positions, PnL/VAR, market bars, macro calendar & headlines (sentiment/velocity/topics).
+
+**How it works (Vertex ADK):**
+- React calls a thin Cloud Run façade (/api/v1/*).
+- The façade invokes a Vertex AI ADK agent (deployed to Agent Engine) to: compute segments, estimate switch probability, fuse media signals, and propose NBAs.
+- Mocked data services (CSV/JSON) provide trades/positions/markets/media to the agent tools.
+- SSE streams from the façade simulate live alerts (or relay agent events).
+
+**Optional:** Memory Bank to persist “Action → Outcome” per client for learning.
+
+**Why it impresses:** Predictive feel, trading-native language, one-click action loop, longitudinal depth, clean agentic fit with a credible path to production.
+
+**Success criteria:** sub-300ms UI loads (from mock), at least one live alert during the demo, actions logged to Insights, timeline & list view fully functional.
 
 ---
 
 ## 📐 Architecture
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    React Frontend                             │
-│  (Existing - in /frontend directory)                         │
-└────────────────────────┬─────────────────────────────────────┘
-                         │ HTTP
-┌────────────────────────▼─────────────────────────────────────┐
-│             API Façade (Cloud Run)                            │
-│  Thin routing layer + SSE streaming                          │
-│  Location: /outputs/api-facade/                              │
-└────────────────────────┬─────────────────────────────────────┘
-                         │ HTTP/JSON
-┌────────────────────────▼─────────────────────────────────────┐
-│          Agents Service (Cloud Run)                           │
-│  ✅ Segmentation Agent (Gemini)                               │
-│  ✅ Media Fusion Agent (Gemini)                               │
-│  ✅ NBA Agent (Gemini)                                        │
-│  ✅ Orchestrator (coordinator)                                │
-│  Location: /outputs/agents-service/                          │
-└────────────────────────┬─────────────────────────────────────┘
-                         │
-┌────────────────────────▼─────────────────────────────────────┐
-│              Cloud SQL PostgreSQL                             │
-│  Schema: /database/schema.sql                                │
-└──────────────────────────────────────────────────────────────┘
-```
+![Architecture Diagram](images/cia_arch.png)
 
----
 
 ## 📂 Project Structure
 
