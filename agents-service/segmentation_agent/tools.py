@@ -15,27 +15,64 @@ logger = logging.getLogger(__name__)
 
 def fetch_trades_summary(client_id: str, data_service) -> Dict[str, Any]:
     """
-    Fetch aggregated trade statistics + switch probability.
+    Fetch aggregated trade statistics for the client.
+    NOW INCLUDES: HMM/change-point switch probability calculation.
     """
-    # ... existing code ...
-    
-    # Compute switch probability using HMM/change-point
-    switch_prob_result = compute_switch_probability(
-        client_id=client_id,
-        data_service=data_service
-    )
-    
-    summary['switch_prob'] = switch_prob_result['switch_prob']
-    summary['switch_prob_reasoning'] = switch_prob_result['reasoning']
-    summary['switch_components'] = {
-        'pattern': switch_prob_result['pattern_instability'],
-        'changepoint': switch_prob_result['change_point'],
-        'momentum': switch_prob_result['momentum_shift'],
-        'flip': switch_prob_result['flip_acceleration'],
-        'drift': switch_prob_result['feature_drift']
-    }
-    
-    return summary
+    try:
+        # ... existing code to fetch trades ...
+        
+        # Compute aggregated statistics (existing code)
+        summary = {
+            "trade_count": len(trades),
+            "instruments": list(trades['instrument'].unique()),
+            "avg_holding_days": _compute_avg_holding_period(trades),
+            "position_flips": _count_position_flips(trades),
+            "market_order_ratio": _compute_market_order_ratio(trades),
+            "recent_trade_pattern": _describe_recent_pattern(trades),
+            "trade_frequency_per_day": len(trades) / 90.0,
+            "unique_instruments": len(trades['instrument'].unique())
+        }
+        
+        # ========================================
+        # NEW: Compute switch probability using HMM/change-point
+        # ========================================
+        logger.info(f"Computing HMM switch probability for {client_id}")
+        switch_result = compute_switch_probability(
+            client_id=client_id,
+            data_service=data_service,
+            lookback_days=90
+        )
+        
+        # Add to summary
+        summary['switch_prob'] = switch_result['switch_prob']
+        summary['switch_reasoning'] = switch_result['reasoning']
+        summary['switch_components'] = {
+            'pattern_instability': switch_result['pattern_instability'],
+            'change_point': switch_result['change_point'],
+            'momentum_shift': switch_result['momentum_shift'],
+            'flip_acceleration': switch_result['flip_acceleration'],
+            'feature_drift': switch_result['feature_drift']
+        }
+        
+        logger.info(
+            f"HMM switch prob for {client_id}: {switch_result['switch_prob']:.2f} "
+            f"(pattern={switch_result['pattern_instability']:.2f}, "
+            f"cp={switch_result['change_point']:.2f})"
+        )
+        # ========================================
+        
+        return summary
+        
+    except Exception as e:
+        logger.error(f"Error fetching trade summary for {client_id}: {e}")
+        return {
+            "error": str(e),
+            "trade_count": 0,
+            # ... rest of error handling ...
+            "switch_prob": 0.30,  # Baseline on error
+            "switch_reasoning": "Error computing switch probability",
+            "switch_components": {}
+        }
 
 def fetch_position_snapshot(client_id: str, data_service) -> Dict[str, float]:
     """
