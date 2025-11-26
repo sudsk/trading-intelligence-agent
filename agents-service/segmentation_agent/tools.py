@@ -8,70 +8,34 @@ import pandas as pd
 from typing import Dict, Any, List
 from datetime import datetime, timedelta
 import logging
+from .switch_probability import compute_switch_probability
 
 logger = logging.getLogger(__name__)
 
 
 def fetch_trades_summary(client_id: str, data_service) -> Dict[str, Any]:
     """
-    Fetch aggregated trade statistics for the client.
-    
-    This tool provides Gemini with a summary of trading activity
-    rather than raw trade data, making analysis more efficient.
-    
-    Args:
-        client_id: Client identifier
-        data_service: Data service instance for database access
-        
-    Returns:
-        Dictionary with trade statistics
+    Fetch aggregated trade statistics + switch probability.
     """
-    try:
-        # Fetch 90 days of trades
-        start_date = datetime.now() - timedelta(days=90)
-        trades = data_service.get_trades(
-            client_id=client_id,
-            start_date=start_date
-        )
-        
-        if trades.empty:
-            logger.warning(f"No trades found for {client_id}")
-            return {
-                "trade_count": 0,
-                "instruments": [],
-                "avg_holding_days": 0.0,
-                "position_flips": 0,
-                "market_order_ratio": 0.0,
-                "recent_trade_pattern": "No trades"
-            }
-        
-        # Compute aggregated statistics
-        summary = {
-            "trade_count": len(trades),
-            "instruments": list(trades['instrument'].unique()),
-            "avg_holding_days": _compute_avg_holding_period(trades),
-            "position_flips": _count_position_flips(trades),
-            "market_order_ratio": _compute_market_order_ratio(trades),
-            "recent_trade_pattern": _describe_recent_pattern(trades),
-            "trade_frequency_per_day": len(trades) / 90.0,
-            "unique_instruments": len(trades['instrument'].unique())
-        }
-        
-        logger.info(f"Trade summary for {client_id}: {summary['trade_count']} trades")
-        return summary
-        
-    except Exception as e:
-        logger.error(f"Error fetching trade summary for {client_id}: {e}")
-        return {
-            "error": str(e),
-            "trade_count": 0,
-            "instruments": [],
-            "avg_holding_days": 0.0,
-            "position_flips": 0,
-            "market_order_ratio": 0.0,
-            "recent_trade_pattern": "Error fetching data"
-        }
-
+    # ... existing code ...
+    
+    # Compute switch probability using HMM/change-point
+    switch_prob_result = compute_switch_probability(
+        client_id=client_id,
+        data_service=data_service
+    )
+    
+    summary['switch_prob'] = switch_prob_result['switch_prob']
+    summary['switch_prob_reasoning'] = switch_prob_result['reasoning']
+    summary['switch_components'] = {
+        'pattern': switch_prob_result['pattern_instability'],
+        'changepoint': switch_prob_result['change_point'],
+        'momentum': switch_prob_result['momentum_shift'],
+        'flip': switch_prob_result['flip_acceleration'],
+        'drift': switch_prob_result['feature_drift']
+    }
+    
+    return summary
 
 def fetch_position_snapshot(client_id: str, data_service) -> Dict[str, float]:
     """
