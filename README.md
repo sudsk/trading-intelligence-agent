@@ -1,491 +1,521 @@
-# Trading Intelligence Agent 
+# Trading Intelligence Agent
 
-## 🎯 Overview
+**AI-powered client segmentation and next best actions for sales & trading desks**
 
-**What it is:** A Trading Intelligence Agent delivered as a standalone React web app. It profiles each client (Trend Follower / Trend Setter / Mean-Reverter / Hedger), estimates Switch Probability (14d), and surfaces Next Best Actions for the desk. Advisory only—no execution.
-
-**Who cares:** Sales & trading leads, RMs, sales-traders, desk heads—anyone prioritising outreach timing and product pitching.
-
-**What they see (UI):**
-
-**Strategy Profile card:** Segment, confidence, top drivers, risk flags, switch probability.
-
-**Media ribbon:** last 3 headlines + sentiment and a Media Pressure chip.
-
-**Timeline:** historical strategy regimes (6–12 months) with event windows.
-
-**Insights feed:** Signals, Actions, Outcomes.
-
-**List view:** “Clients with Rising Switch Risk,” sortable/filterable.
-
-**Action bar:** one-click Create Task, Share Summary, Propose Product (logged in-app).
-
-**Data (mocked but credible):** trades, positions, PnL/VAR, market bars, macro calendar & headlines (sentiment/velocity/topics).
-
-**How it works (Vertex ADK):**
-- React calls a thin Cloud Run façade (/api/v1/*).
-- The façade invokes a Vertex AI ADK agent (deployed to Agent Engine) to: compute segments, estimate switch probability, fuse media signals, and propose NBAs.
-- Mocked data services (CSV/JSON) provide trades/positions/markets/media to the agent tools.
-- SSE streams from the façade simulate live alerts (or relay agent events).
-
-**Optional:** Memory Bank to persist “Action → Outcome” per client for learning.
-
-**Why it impresses:** Predictive feel, trading-native language, one-click action loop, longitudinal depth, clean agentic fit with a credible path to production.
-
-**Success criteria:** sub-300ms UI loads (from mock), at least one live alert during the demo, actions logged to Insights, timeline & list view fully functional.
+[![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Run-4285F4?logo=google-cloud)](https://cloud.google.com/run)
+[![Gemini](https://img.shields.io/badge/Gemini-2.0%20Flash-fbbc04)](https://ai.google.dev/)
+[![MCP](https://img.shields.io/badge/MCP-Protocol-purple)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
-## 📐 Architecture
+## 🎯 What It Does
+
+Profiles each trading client into behavioral segments (Trend Follower, Mean Reverter, Hedger, Trend Setter), estimates their **Switch Probability** using statistical signals, and surfaces **Next Best Actions** for relationship managers.
+
+### **Key Features**
+
+- 📊 **Client Segmentation** - Classifies trading behavior using Gemini 2.0 Flash
+- 📈 **Switch Probability** - HMM/change-point detection (5 statistical signals)
+- 📰 **Media Fusion** - Real-time sentiment analysis of market news
+- 🎯 **Next Best Actions** - AI-generated recommendations with segment-specific playbooks
+- ⚡ **Real-Time Alerts** - SSE streaming for immediate notifications
+- 🏗️ **MCP Architecture** - Production-ready Model Context Protocol integration
+
+---
+
+## 🏛️ Architecture
 
 ![Architecture Diagram](images/tia_arch.png)
 
-
-## 📂 Project Structure
-
 ```
-├── shared/
-│   └── agent_contracts.py          # Type-safe contracts between services
-│
-├── agents-service/                  # ✅ 100% COMPLETE
-│   ├── main.py                      # FastAPI app with 5 endpoints
-│   ├── agents/
-│   │   ├── segmentation_agent/      # Gemini-powered classification
-│   │   │   ├── agent.py
-│   │   │   ├── prompts.py           # 1500+ words of instructions
-│   │   │   └── tools.py             # Data fetching functions
-│   │   ├── media_fusion_agent/      # Gemini-powered sentiment
-│   │   │   ├── agent.py
-│   │   │   └── prompts.py
-│   │   ├── nba_agent/               # Gemini-powered recommendations
-│   │   │   ├── agent.py
-│   │   │   └── prompts.py
-│   │   └── orchestrator_agent/      # Coordination logic
-│   │       └── agent.py
-│   ├── services/
-│   │   └── data_service.py          # PostgreSQL access
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── .env.example
-│
-├── api-facade/                      
-│   ├── main.py                      # FastAPI app
-│   ├── routes/
-│   │   ├── clients.py              
-│   │   ├── actions.py              
-│   │   ├── alerts.py               
-│   │   └── demo.py                 
-│   ├── services/
-│   │   ├── agent_client.py         # HTTP client to agents-service
-│   │   ├── alert_queue.py          
-│   │   └── data_service.py         
-│   ├── Dockerfile                   
-│   ├── requirements.txt             
-│   └── .env.example                 
-│
-├── docs/
-    ├── QUICKSTART.md               
-    ├── INDEX.md        
-    └── PROJECT_SUMMARY.md               
+┌─────────────┐
+│   React     │  Frontend (Port 3000)
+│   Frontend  │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ API Façade  │  Thin routing layer (Port 8000)
+│  (FastAPI)  │  • SSE streaming
+└──────┬──────┘  • Action logging
+       │
+       ▼
+┌─────────────┐
+│   Agents    │  AI orchestration (Port 8001)
+│  Service    │  • Segmentation Agent
+│  (FastAPI)  │  • Media Fusion Agent
+└──────┬──────┘  • NBA Agent
+       │
+       ├──────────┐
+       ▼          ▼
+┌──────────┐  ┌──────────────┐
+│  Gemini  │  │ MCP Servers  │  Data abstraction (Ports 3001-3005)
+│ 2.0 Flash│  │ • Trade      │  • Mock data (demo)
+└──────────┘  │ • Risk       │  • Production ready
+              │ • Market     │
+              │ • News       │
+              │ • Client     │
+              └──────┬───────┘
+                     │
+                     ▼
+              ┌──────────────┐
+              │  PostgreSQL  │  Agent state only
+              │  (Cloud SQL) │  • Alerts
+              └──────────────┘  • Actions
+                                • Switch probability history
 ```
-
----
-
-## 🤖 Agent Details
-
-### **1. Segmentation Agent** 🎯
-**Purpose**: Classify client trading behavior into one of 4 segments
-
-**How It Works**:
-- **Input**: Client ID → triggers data fetching via tools
-- **Tools Called**:
-  - `fetch_trades_summary()` - Gets 90-day trade statistics (count, instruments, flips, market order ratio)
-  - `fetch_position_snapshot()` - Gets current position concentrations
-  - `compute_switch_probability()` - HMM/change-point heuristic (5 signals)
-- **Gemini Processing**: 
-  - Sends comprehensive prompt (1500+ words) with trade patterns + positions
-  - Gemini analyzes momentum alignment, holding periods, flip frequency
-  - Returns JSON: segment, confidence, drivers, risk flags
-- **Output**: 
-  - Segment classification (Trend Follower / Mean Reverter / Hedger / Trend Setter)
-  - Switch probability (0.15-0.85) from sophisticated HMM calculation
-  - Confidence score (0.0-1.0)
-  - 2-3 key drivers explaining the classification
-  - Risk flags (concentration, leverage, instability)
-
-**Key Innovation**: 
-- Switch probability now uses **5 statistical signals** instead of Gemini's single estimate:
-  1. Pattern Instability (rolling variance)
-  2. Change-Point Detection (CUSUM test)
-  3. Momentum Shifts (direction changes)
-  4. Flip Acceleration (position reversal rate)
-  5. Feature Drift (deviation from baseline)
-
-**Temperature**: 0.3 (low for consistent classification)
-
-**Example Flow**:
-```
-Client: ACME_FX_023
-→ fetch_trades_summary() → 450 trades, 2.8d avg hold, 3 flips/30d, 85% market orders
-→ fetch_position_snapshot() → EURUSD: 72% concentration
-→ compute_switch_probability() → 0.51 (high pattern variance + recent change-point)
-→ Gemini analyzes → "Trend Follower" (85% confidence)
-→ Drivers: ["High momentum-beta", "Short holds", "Aggressive entries"]
-→ Risk: ["EUR concentration 72%"]
-```
-
----
-
-### **2. Media Fusion Agent** 📰
-**Purpose**: Analyze financial news sentiment impacting client exposures
-
-**How It Works**:
-- **Input**: Client ID + list of instruments (exposures)
-- **Data Fetching**:
-  - Queries headlines from last 72 hours
-  - Filters by client's primary instruments (EURUSD, GBPUSD, etc.)
-  - Batches up to 20 headlines for efficiency
-- **Gemini Processing**:
-  - Sends batch of headlines with classification instructions
-  - Gemini scores each headline: sentiment (positive/neutral/negative) + score (-1.0 to +1.0)
-  - Gemini assesses aggregate: average sentiment, velocity, media pressure
-- **Pressure Logic**:
-  - **HIGH**: >20 headlines AND |avg sentiment| > 0.5 AND |velocity| > 0.3
-  - **MEDIUM**: >10 headlines OR |avg sentiment| > 0.3 OR |velocity| > 0.15
-  - **LOW**: Otherwise
-- **Output**:
-  - Media pressure level (HIGH/MEDIUM/LOW)
-  - Average sentiment (-1.0 to +1.0)
-  - Sentiment velocity (rate of change)
-  - Top 5 headlines with individual scores
-  - Gemini's reasoning
-
-**Key Features**:
-- Batch processing (efficient token usage)
-- Trader-focused sentiment (not general news)
-- Velocity tracking (accelerating negative news = higher pressure)
-- Fallback to keyword-based if Gemini unavailable
-
-**Temperature**: 0.2 (very low for consistent scoring)
-
-**Example Flow**:
-```
-Client: ACME_FX_023, Exposures: [EURUSD, GBPUSD]
-→ Fetch headlines → 18 EUR-related headlines (last 72h)
-→ Batch to Gemini → 
-   "ECB Signals Rate Hold" → sentiment: negative, score: -0.6
-   "EUR Falls on Weak PMI" → sentiment: negative, score: -0.7
-   ...
-→ Aggregate: avg_sentiment = -0.58, velocity = -0.18
-→ Pressure: HIGH (18 headlines + strong negative + accelerating)
-→ Reasoning: "High volume of negative EUR news with accelerating bearish sentiment"
-```
-
----
-
-### **3. NBA Agent** 💡
-**Purpose**: Generate relationship manager recommendations (Next Best Actions)
-
-**How It Works**:
-- **Input**: Complete client context from Segmentation + Media agents:
-  - Segment, switch probability, confidence
-  - Risk flags, primary exposure
-  - Media pressure, sentiment
-  - Key drivers
-- **Gemini Processing**:
-  - Builds rich prompt with segment-specific playbooks (4 segments × 4 scenarios)
-  - Gemini selects 1-5 actions based on:
-    - Switch prob > 0.50 → PROACTIVE_OUTREACH
-    - Risk flags → PROPOSE_HEDGE
-    - High media → SEND_MARKET_UPDATE
-    - Stable → SUGGEST_OPPORTUNITY
-  - Returns JSON array of recommendations
-- **Validation**:
-  - Ensures action types are valid (5 types)
-  - Ensures priorities are valid (HIGH/MEDIUM/LOW)
-  - Ensures products and action steps are present
-- **Output**:
-  - 1-5 prioritized recommendations
-  - Each with: action, priority, message, 2-4 products, 3-5 action steps, reasoning
-
-**Action Types** (per spec):
-1. **PROACTIVE_OUTREACH** - Switch prob > 0.50 (prevent churn)
-2. **ENHANCED_MONITORING** - Switch prob 0.35-0.50 (watch closely)
-3. **PROPOSE_HEDGE** - Risk flags present (mitigate risk)
-4. **SEND_MARKET_UPDATE** - High media pressure (demonstrate expertise)
-5. **SUGGEST_OPPORTUNITY** - Stable client (cross-sell)
-
-**Playbooks** (segment-specific products):
-- **Trend Follower**: Forward strips, options collars, momentum algorithms
-- **Mean Reverter**: Range products, volatility strategies, pairs trading
-- **Hedger**: Dynamic hedging, basis swaps, tail risk protection
-- **Trend Setter**: Alpha strategies, thematic products, smart beta
-
-**Temperature**: 0.4 (higher for creative recommendations)
-
-**Example Flow**:
-```
-Client: ACME_FX_023
-Context:
-  - Segment: Trend Follower (85% confidence)
-  - Switch prob: 0.64 (HIGH)
-  - Risk: EUR concentration 72%
-  - Media: HIGH pressure, -0.58 sentiment
-  - Drivers: Momentum-beta, short holds
-  
-→ Gemini analyzes playbooks →
-   Recommendation 1: PROACTIVE_OUTREACH (HIGH priority, URGENT)
-   - Message: "Switch prob 64% + EUR concentration = high churn risk"
-   - Products: ["EURUSD forward strips (3-month)", "Options collars"]
-   - Actions: ["Call today", "Prepare analysis", "Present hedging scenarios"]
-   - Reasoning: "Elevated switch prob + concentration creates perfect storm"
-   
-   Recommendation 2: PROPOSE_HEDGE (HIGH priority)
-   - Message: "EUR concentration 72% creates single-point failure"
-   - Products: ["EURUSD put options", "Cross-hedge via EURGBP"]
-   - Actions: ["Calculate hedge ratio", "Present cost-benefit", "Discuss outlook"]
-   - Reasoning: "Concentration risk amplified by negative media"
-```
-
----
-
-## 🔄 Orchestrator Flow
-
-**The orchestrator coordinates all three agents:**
-
-```
-1. Call Segmentation Agent
-   → Get: segment, switch_prob (HMM-based), confidence, drivers, risk_flags
-   
-2. Extract exposures from segmentation
-   → Primary exposure + top instruments
-   
-3. Call Media Fusion Agent
-   → Get: pressure, sentiment, velocity, headlines
-   
-4. Adjust switch probability based on media
-   → HIGH negative media → +0.10
-   → HIGH positive media → -0.05
-   → MEDIUM → ±0.05
-   
-5. Call NBA Agent with full context
-   → Get: 1-5 prioritized recommendations
-   
-6. Assemble complete profile
-   → Return to API façade
-```
-
-**Key Design**: 
-- Segmentation provides base switch prob (HMM/change-point)
-- Media provides adjustment factor (market sentiment)
-- NBA uses final switch prob for action selection
-
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Set Up Environment
+### **Prerequisites**
+
+- Python 3.11+
+- Node.js 18+
+- Docker & Docker Compose
+- Google Cloud Project (for Gemini API)
+
+### **1. Clone Repository**
 
 ```bash
-# Clone repository
-git clone <repo-url>
+git clone https://github.com/sudsk/trading-intelligence-agent.git
 cd trading-intelligence-agent
-
-# Set up Python virtual environment
-python3.11 -m venv venv
-source venv/bin/activate
 ```
 
-### 2. Configure Environment Variables
+### **2. Start Everything (Docker Compose)**
 
 ```bash
-# agents-service/.env
-cp agents-service/.env.example agents-service/.env
+# Set environment variables
+export GOOGLE_CLOUD_PROJECT=your-project-id
+export GEMINI_API_KEY=your-api-key
 
-# Edit .env:
-DATABASE_URL=postgresql://user:pass@host:5432/dbname
-GOOGLE_CLOUD_PROJECT=your-project-id
-GEMINI_MODEL=gemini-2.0-flash-exp
+# Start all services (8 containers)
+docker-compose up
+
+# Services will be available at:
+# - Frontend: http://localhost:3000
+# - API Façade: http://localhost:8000
+# - Agents Service: http://localhost:8001
+# - MCP Servers: http://localhost:3001-3005
+# - PostgreSQL: localhost:5432
 ```
 
-### 3. Install Dependencies
-
-```bash
-# Agents service
-cd agents-service
-pip install -r requirements.txt
-```
-
-### 4. Run Locally
-
-```bash
-# Terminal 1: Agents Service
-cd agents-service
-uvicorn main:app --port 8001 --reload
-
-# Terminal 2: API Façade (once complete)
-cd api-facade
-uvicorn main:app --port 8000 --reload
-
-# Terminal 3: Frontend
-cd frontend
-npm start
-```
-
-### 5. Test Agents Service
+### **3. Test API**
 
 ```bash
 # Health check
 curl http://localhost:8001/health
 
-# Get client profile
+# Analyze client
 curl -X POST http://localhost:8001/analyze \
   -H "Content-Type: application/json" \
   -d '{"client_id": "ACME_FX_023"}'
-
-# Get segmentation only
-curl -X POST http://localhost:8001/segment \
-  -H "Content-Type: application/json" \
-  -d '{"client_id": "ACME_FX_023"}'
 ```
 
 ---
 
-## 🌩️ Deploy to Cloud Run
+## 📊 Example Output
 
-### Deploy Agents Service
-
-```bash
-cd agents-service
-
-# Build and deploy
-gcloud run deploy agents-service \
-  --source . \
-  --region us-central1 \
-  --platform managed \
-  --set-env-vars DATABASE_URL=postgresql://...,GOOGLE_CLOUD_PROJECT=... \
-  --allow-unauthenticated  # For testing; remove for production
-
-# Get URL
-gcloud run services describe agents-service \
-  --region us-central1 \
-  --format 'value(status.url)'
-```
-
-### Deploy API Façade (once complete)
-
-```bash
-cd api-facade
-
-# Deploy
-gcloud run deploy api-facade \
-  --source . \
-  --region us-central1 \
-  --set-env-vars AGENTS_SERVICE_URL=https://agents-service-xxx.run.app \
-  --allow-unauthenticated
-
-# Update frontend
-echo "REACT_APP_API_URL=https://api-facade-xxx.run.app" > frontend/.env.production
+```json
+{
+  "client_id": "ACME_FX_023",
+  "segment": "Trend Follower",
+  "confidence": 0.85,
+  "switch_probability": 0.64,
+  "switch_method": "HMM/change-point",
+  "switch_components": {
+    "pattern_instability": 0.18,
+    "changepoint_detection": 0.20,
+    "momentum_shifts": 0.12,
+    "flip_acceleration": 0.11,
+    "feature_drift": 0.03
+  },
+  "drivers": [
+    "High momentum-beta correlation",
+    "Short holding periods (2.8 days avg)",
+    "Aggressive market order execution (85%)"
+  ],
+  "risk_flags": [
+    "EUR concentration 72%"
+  ],
+  "media_pressure": "HIGH",
+  "media_sentiment": -0.58,
+  "recommendations": [
+    {
+      "action": "PROACTIVE_OUTREACH",
+      "priority": "HIGH",
+      "urgency": "URGENT",
+      "message": "Switch probability 64% + EUR concentration creates high churn risk",
+      "products": [
+        "EURUSD forward strips (3-month ladder)",
+        "Options collars for EUR exposure"
+      ],
+      "suggested_actions": [
+        "Call client today to discuss positioning",
+        "Prepare EUR concentration analysis",
+        "Present hedging scenarios with cost-benefit"
+      ],
+      "reasoning": "Elevated switch probability combined with 72% EUR concentration creates perfect storm for client defection"
+    }
+  ]
+}
 ```
 
 ---
 
-## 🔧 Development
+## 🧠 How It Works
 
-### Adding a New Agent
+### **1. Segmentation Agent**
 
-1. Create agent directory:
+Classifies trading behavior into 4 segments:
+
+- **Trend Follower** - Momentum-driven, directional bias
+- **Mean Reverter** - Counter-trend, range-bound strategies  
+- **Hedger** - Risk mitigation, defensive positioning
+- **Trend Setter** - Innovative, first-mover strategies
+
+**Data Used**:
+- 90-day trade history (count, instruments, flips, holding periods)
+- Current positions (concentrations, leverage)
+- Market order ratios
+
+**Output**: Segment, confidence, drivers, risk flags
+
+### **2. Switch Probability (HMM/Change-Point)**
+
+Calculates probability client will switch trading desk using 5 statistical signals:
+
+1. **Pattern Instability** (0.0-0.30) - Rolling variance in trade volume/diversity
+2. **Change-Point Detection** (0.0-0.25) - CUSUM test for regime breaks
+3. **Momentum Shifts** (0.0-0.20) - Position direction reversals
+4. **Flip Acceleration** (0.0-0.15) - Increasing uncertainty indicators
+5. **Feature Drift** (0.0-0.10) - Deviation from baseline behavior
+
+**Formula**: `switch_prob = 0.30 (baseline) + Σ(5 signals)`, clamped to [0.15, 0.85]
+
+### **3. Media Fusion Agent**
+
+Analyzes financial news sentiment:
+
+- Fetches last 72 hours of headlines for client exposures
+- Gemini scores each headline: sentiment + score (-1.0 to +1.0)
+- Calculates aggregate sentiment, velocity, media pressure
+- Adjusts switch probability based on media environment
+
+**Pressure Levels**:
+- **HIGH**: >20 headlines AND |sentiment| > 0.5 AND |velocity| > 0.3
+- **MEDIUM**: >10 headlines OR |sentiment| > 0.3
+- **LOW**: Otherwise
+
+### **4. NBA (Next Best Action) Agent**
+
+Generates 1-5 prioritized recommendations using segment-specific playbooks:
+
+**Action Types**:
+- `PROACTIVE_OUTREACH` - Switch prob > 0.50 (prevent churn)
+- `ENHANCED_MONITORING` - Switch prob 0.35-0.50 (watch closely)
+- `PROPOSE_HEDGE` - Risk flags present (mitigate risk)
+- `SEND_MARKET_UPDATE` - High media pressure (demonstrate expertise)
+- `SUGGEST_OPPORTUNITY` - Stable client (cross-sell)
+
+**16 Segment-Specific Playbooks** (4 segments × 4 scenarios)
+
+Example products:
+- **Trend Follower**: Forward strips, momentum algorithms
+- **Hedger**: Dynamic hedging programs, tail risk protection
+
+---
+
+## 🏗️ MCP Architecture
+
+**Model Context Protocol** provides clean abstraction for data sources.
+
+### **Demo/PoC: Mock MCP Servers**
+
+5 MCP servers auto-generate realistic CSV data:
+
+- **Trade MCP** (Port 3001) - 2,000 trades across 4 clients
+- **Risk MCP** (Port 3002) - Positions + risk metrics
+- **Market MCP** (Port 3003) - 90 days OHLCV bars
+- **News MCP** (Port 3004) - 200 headlines (72 hours)
+- **Client MCP** (Port 3005) - Client metadata
+
+### **Production: Real MCP Servers**
+
+Replace CSV → Database queries:
+
+```python
+# Trade MCP: Oracle OMS instead of CSV
+def get_client_trades(client_id):
+    return oracle_connection.query("SELECT * FROM oms_trades WHERE...")
+
+# Risk MCP: Sybase risk warehouse
+# Market MCP: Bloomberg API
+# News MCP: Reuters News API
+# Client MCP: Salesforce CRM
+```
+
+**Agents don't change!** ✅ Just swap MCP server containers.
+
+---
+
+## 📁 Project Structure
+
+```
+trading-intelligence-agent/
+├── frontend/                    # React SPA
+│   ├── src/
+│   │   ├── components/
+│   │   └── services/
+│   └── package.json
+│
+├── api-facade/                  # API routing layer
+│   ├── routes/
+│   │   ├── clients.py
+│   │   ├── actions.py
+│   │   └── alerts.py
+│   ├── services/
+│   │   ├── agent_client.py
+│   │   ├── alert_queue.py
+│   │   └── data_service.py
+│   └── main.py
+│
+├── agents-service/              # AI agent orchestration
+│   ├── agents/
+│   │   ├── orchestrator/
+│   │   ├── segmentation_agent/
+│   │   │   ├── agent.py
+│   │   │   ├── prompts.py
+│   │   │   ├── tools.py
+│   │   │   └── switch_probability.py   # HMM calculator
+│   │   ├── media_fusion_agent/
+│   │   └── nba_agent/
+│   ├── services/
+│   │   ├── mcp_data_service.py         # MCP client
+│   │   └── data_service.py             # PostgreSQL (agent state)
+│   └── main.py
+│
+├── mcp-servers/                 # Data abstraction layer
+│   ├── trade/
+│   ├── risk/
+│   ├── market/
+│   ├── news/
+│   └── client/
+│
+├── database/
+│   └── schema.sql               # PostgreSQL schema (agent state only)
+│
+├── deploy/                      # Cloud Run deployment
+│   ├── deploy_all.sh
+│   └── deploy_*.sh
+│
+├── docker-compose.yml           # Local development
+└── README.md                    # This file
+```
+
+---
+
+## ☁️ Cloud Deployment
+
+### **Cloud Run Services (8 total)**
+
 ```bash
-mkdir -p agents-service/agents/new_agent
-touch agents-service/agents/new_agent/prompts.py
-touch agents-service/agents/new_agent/agent.py
+# Set environment
+export GOOGLE_CLOUD_PROJECT=your-project-id
+export REGION=us-central1
+
+# Deploy all services
+./deploy/deploy_all.sh
+
+# Or deploy individually
+./deploy/deploy_mcp_trade.sh      # Trade MCP
+./deploy/deploy_mcp_risk.sh       # Risk MCP
+./deploy/deploy_mcp_market.sh     # Market MCP
+./deploy/deploy_mcp_news.sh       # News MCP
+./deploy/deploy_mcp_client.sh     # Client MCP
+./deploy/deploy_agents_service.sh # Agents
+./deploy/deploy_api_facade.sh     # API
 ```
 
-2. Define prompts (`prompts.py`):
-```python
-SYSTEM_INSTRUCTION = """
-You are an expert [domain]...
-"""
+### **Cloud SQL Database**
+
+```bash
+# Create PostgreSQL instance
+gcloud sql instances create trading-intelligence-db \
+  --database-version=POSTGRES_15 \
+  --tier=db-f1-micro \
+  --region=us-central1
+
+# Create database
+gcloud sql databases create trading_intelligence \
+  --instance=trading-intelligence-db
+
+# Load schema
+gcloud sql connect trading-intelligence-db --user=postgres < database/schema.sql
 ```
 
-3. Implement agent (`agent.py`):
-```python
-from google import generativeai as genai
+### **Cost Estimate (Demo Traffic)**
 
-class NewAgent:
-    def __init__(self):
-        self.model = genai.GenerativeModel(
-            model_name='gemini-2.0-flash-exp',
-            system_instruction=SYSTEM_INSTRUCTION
-        )
+| Service | Resources | Monthly Cost |
+|---------|-----------|--------------|
+| 5× MCP Servers | 512Mi, 0-5 instances | $15 |
+| Agents Service | 2Gi, 1-10 instances | $15 |
+| API Façade | 1Gi, 1-10 instances | $8 |
+| Cloud SQL | db-f1-micro | $7 |
+| **Total** | | **~$45/month** |
+
+---
+
+## 🔧 Configuration
+
+### **Environment Variables**
+
+```bash
+# agents-service/.env
+DATABASE_URL=postgresql://user:pass@host:5432/trading_intelligence
+GOOGLE_CLOUD_PROJECT=your-project-id
+GEMINI_MODEL=gemini-2.0-flash-exp
+MCP_TRADE_SERVER_URL=http://trade-mcp:3001
+MCP_RISK_SERVER_URL=http://risk-mcp:3002
+MCP_MARKET_SERVER_URL=http://market-mcp:3003
+MCP_NEWS_SERVER_URL=http://news-mcp:3004
+MCP_CLIENT_SERVER_URL=http://client-mcp:3005
+
+# api-facade/.env
+DATABASE_URL=postgresql://user:pass@host:5432/trading_intelligence
+AGENTS_SERVICE_URL=http://agents-service:8001
 ```
-
-4. Register in orchestrator
 
 ---
 
 ## 🧪 Testing
 
-### Test Individual Agents
-
-```python
-# Test segmentation
-from agents.segmentation_agent.agent import SegmentationAgent
-from services.data_service import DataService
-
-data_service = DataService()
-agent = SegmentationAgent(data_service)
-result = agent.analyze("ACME_FX_023")
-print(result)
-```
-
-### Integration Tests
+### **Run Tests**
 
 ```bash
-# Run all tests
+# Agents service
 cd agents-service
-python -m pytest tests/
+pytest tests/
 
-# Test specific agent
-python -m pytest tests/test_segmentation_agent.py
+# API façade
+cd api-facade
+pytest tests/
+```
+
+### **Manual Testing**
+
+```bash
+# Test MCP servers
+curl http://localhost:3001/health   # Trade
+curl http://localhost:3002/health   # Risk
+curl http://localhost:3003/health   # Market
+curl http://localhost:3004/health   # News
+curl http://localhost:3005/health   # Client
+
+# Test agents service
+curl -X POST http://localhost:8001/segment \
+  -H "Content-Type: application/json" \
+  -d '{"client_id": "ACME_FX_023"}'
+
+# Test full analysis
+curl -X POST http://localhost:8001/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"client_id": "ACME_FX_023"}'
 ```
 
 ---
 
-## 📚 Documentation
+## 📖 Documentation
 
-- **QUICKSTART.md** - Quickstart
-- Code is extensively commented
-
----
-
-## 🔄 Migration to Agent Engine
-
-### Current (Cloud Run):
-```python
-response = await httpx.post(
-    "https://agents-service.run.app/analyze",
-    json={"client_id": client_id}
-)
-```
-
-### Future (Agent Engine):
-```python
-response = await agent_engine_client.invoke(
-    agent="orchestrator-agent",
-    input={"client_id": client_id}
-)
-```
-
-**Only 1 file changes:** `services/agent_client.py`
-
-**No frontend changes needed!** ✅
+- **[QUICKSTART.md](docs/QUICKSTART.md)** - 10-minute setup guide
+- **[INTEGRATION_GUIDE.md](docs/INTEGRATION_GUIDE.md)** - MCP architecture integration
+- **[AGENT_SUMMARY.md](docs/AGENT_SUMMARY.md)** - How each agent works
+- **[HMM_INTEGRATION_GUIDE.md](docs/HMM_INTEGRATION_GUIDE.md)** - Switch probability implementation
+- **[MCP_ARCHITECTURE.md](docs/MCP_ARCHITECTURE.md)** - Production MCP setup
 
 ---
 
-## 📝 License
+## 🎯 Use Cases
 
-[Your License]
+### **Sales & Trading Desks**
+- Prioritize client outreach based on churn risk
+- Proactive product recommendations
+- Risk flag early warning system
 
+### **Relationship Managers**
+- Understand client trading behavior
+- Time market updates for maximum impact
+- Track action outcomes for learning
 
+### **Desk Heads**
+- Monitor portfolio of client relationships
+- Identify high-value cross-sell opportunities
+- Measure RM effectiveness
+
+---
+
+## 🔒 Security
+
+- **Authentication**: Cloud Run IAM for service-to-service
+- **Data Privacy**: Client data never leaves your environment
+- **API Keys**: Store in Google Secret Manager
+- **Network**: Internal-only for MCP servers
+- **Database**: Cloud SQL with private IP
+
+---
+
+## 🚧 Roadmap
+
+- [ ] **Agent Memory Bank** - Learn from action outcomes
+- [ ] **Multi-asset Support** - FX, Equities, Fixed Income, Commodities
+- [ ] **Real-time Streaming** - Live position updates
+- [ ] **Mobile App** - iOS/Android for RMs
+- [ ] **Voice Interface** - Conversational AI assistant
+- [ ] **Advanced Analytics** - Client lifetime value, propensity models
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Google Cloud** - Gemini 2.0 Flash, Cloud Run, Cloud SQL
+- **Model Context Protocol** - Data abstraction standard
+- **FastAPI** - Modern Python web framework
+- **React** - Frontend framework
+
+---
+
+## 📧 Contact
+
+**Suds** - [@sudsk](https://github.com/sudsk)
+
+**Project Link**: [https://github.com/sudsk/trading-intelligence-agent](https://github.com/sudsk/trading-intelligence-agent)
+
+---
+
+## 🎉 Demo
+
+Try it now: [trading-intelligence-demo.run.app](https://trading-intelligence-demo.run.app)
+
+---
+
+Made with ❤️ for Sales & Trading teams
