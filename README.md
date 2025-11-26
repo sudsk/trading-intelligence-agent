@@ -432,7 +432,6 @@ curl -X POST http://localhost:8001/analyze \
 - **[QUICKSTART.md](docs/QUICKSTART.md)** - 10-minute setup guide
 - **[INTEGRATION_GUIDE.md](docs/INTEGRATION_GUIDE.md)** - MCP architecture integration
 - **[AGENT_SUMMARY.md](docs/AGENT_SUMMARY.md)** - How each agent works
-- **[HMM_INTEGRATION_GUIDE.md](docs/HMM_INTEGRATION_GUIDE.md)** - Switch probability implementation
 - **[MCP_ARCHITECTURE.md](docs/MCP_ARCHITECTURE.md)** - Production MCP setup
 
 ---
