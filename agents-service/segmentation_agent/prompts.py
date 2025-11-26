@@ -119,7 +119,6 @@ Output: segment="Hedger", confidence=0.85, switchProb=0.22
 Remember: You are analyzing professional trading behavior. Be precise, quantitative, and actionable.
 """
 
-
 ANALYSIS_PROMPT_TEMPLATE = """Analyze the trading behavior for client {client_id}.
 
 **Trade Summary:**
@@ -128,38 +127,29 @@ ANALYSIS_PROMPT_TEMPLATE = """Analyze the trading behavior for client {client_id
 **Position Snapshot:**
 {position_snapshot}
 
-Based on this data, classify the client into one of the four segments and assess their strategy stability (switch probability).
-
-Respond with ONLY the JSON output as specified in your instructions.
-
-**Switch Probability Analysis:**
-The HMM/change-point heuristic has computed a switch probability of {switch_prob:.2f}.
-Components:
-- Pattern Instability: {pattern:.3f}
-- Change-Point Detection: {changepoint:.3f}
-- Momentum Shifts: {momentum:.3f}
-- Flip Acceleration: {flip:.3f}
-- Feature Drift: {drift:.3f}
+**Switch Probability Analysis (HMM/Change-Point):**
+A sophisticated 5-signal statistical model has computed switch probability: {switch_prob:.2f}
+Component Breakdown:
+- Pattern Instability: {pattern:.3f} (variance in trading behaviors)
+- Change-Point Detection: {changepoint:.3f} (regime breaks via CUSUM)
+- Momentum Shifts: {momentum:.3f} (direction changes)
+- Flip Acceleration: {flip:.3f} (position reversal rate)
+- Feature Drift: {drift:.3f} (baseline deviation)
 
 Reasoning: {switch_reasoning}
 
-You may reference this computed switch probability in your analysis, but you should also consider the qualitative factors in the trade summary.
+**Your Task:**
+Based on this data, classify the client into one of the four segments and assess their strategy stability.
 
+You may reference the computed switch probability in your reasoning, but also consider qualitative factors.
+Your confidence score should reflect how well the quantitative data aligns with the segment classification.
+
+Respond with ONLY the JSON output as specified in your instructions.
 """
 
 
 def build_analysis_prompt(client_id: str, trade_summary: dict, position_snapshot: dict) -> str:
-    """
-    Build the complete prompt for Gemini.
-    
-    Args:
-        client_id: Client identifier
-        trade_summary: Aggregated trade statistics
-        position_snapshot: Current position concentrations
-    
-    Returns:
-        Formatted prompt string
-    """
+    """Build the complete prompt for Gemini."""
     # Format trade summary
     trade_summary_str = "\n".join([
         f"- Trade Count (90d): {trade_summary.get('trade_count', 0)}",
@@ -179,12 +169,23 @@ def build_analysis_prompt(client_id: str, trade_summary: dict, position_snapshot
     else:
         position_str = "- No significant positions"
     
+    # Extract switch probability components
+    switch_prob = trade_summary.get('switch_prob', 0.30)
+    switch_reasoning = trade_summary.get('switch_reasoning', 'No reasoning available')
+    components = trade_summary.get('switch_components', {})
+    
     return ANALYSIS_PROMPT_TEMPLATE.format(
         client_id=client_id,
         trade_summary=trade_summary_str,
-        position_snapshot=position_str
+        position_snapshot=position_str,
+        switch_prob=switch_prob,
+        pattern=components.get('pattern_instability', 0.0),
+        changepoint=components.get('change_point', 0.0),
+        momentum=components.get('momentum_shift', 0.0),
+        flip=components.get('flip_acceleration', 0.0),
+        drift=components.get('feature_drift', 0.0),
+        switch_reasoning=switch_reasoning
     )
-
 
 # Example few-shot prompts for better accuracy
 FEW_SHOT_EXAMPLES = """
