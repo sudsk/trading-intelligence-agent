@@ -8,6 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY server.py .
 COPY data/ ./data/
 
-ENV PORT={config['port']}
+ENV PORT=3001
 
 CMD ["python", "server.py"]

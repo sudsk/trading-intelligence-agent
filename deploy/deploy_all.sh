@@ -1,65 +1,41 @@
 #!/bin/bash
-# deploy_all.sh
+set -e
 
-PROJECT_ID="your-project-id"
-REGION="us-central1"
+PROJECT_ID="${GOOGLE_CLOUD_PROJECT:-your-project-id}"
+REGION="${REGION:-us-central1}"
 
-echo "🚀 Deploying Trading Intelligence System to Cloud Run"
+echo "🚀 Deploying Trading Intelligence System"
+echo "   Project: $PROJECT_ID"
+echo "   Region: $REGION"
+echo ""
 
-# 1. Frontend
-echo "📦 Deploying Frontend..."
-gcloud run deploy frontend \
-  --source ./frontend \
-  --region $REGION \
-  --project $PROJECT_ID \
-  --allow-unauthenticated
-
-FRONTEND_URL=$(gcloud run services describe frontend --region $REGION --format 'value(status.url)')
-echo "✅ Frontend: $FRONTEND_URL"
-
-# 2-8. MCP Servers
-echo "📦 Deploying MCP Servers..."
-for mcp in trade risk market news client; do
-  gcloud run deploy ${mcp}-mcp \
-    --source ./mcp-servers/${mcp} \
-    --region $REGION \
-    --project $PROJECT_ID \
-    --no-allow-unauthenticated \
-    --ingress internal
-  
-  MCP_URL=$(gcloud run services describe ${mcp}-mcp --region $REGION --format 'value(status.url)')
-  echo "✅ ${mcp}-mcp: $MCP_URL"
-  
-  # Store in env vars
-  export ${mcp^^}_MCP_URL=$MCP_URL
+# Deploy MCP Servers
+for service in trade risk market news client; do
+  ./deploy/deploy_mcp_$service.sh
 done
 
-# 3. Agents Service
-echo "📦 Deploying Agents Service..."
-gcloud run deploy agents-service \
-  --source ./agents-service \
-  --region $REGION \
-  --project $PROJECT_ID \
-  --no-allow-unauthenticated \
-  --ingress internal \
-  --set-env-vars "MCP_TRADE_SERVER_URL=$TRADE_MCP_URL,MCP_RISK_SERVER_URL=$RISK_MCP_URL,MCP_MARKET_SERVER_URL=$MARKET_MCP_URL,MCP_NEWS_SERVER_URL=$NEWS_MCP_URL,MCP_CLIENT_SERVER_URL=$CLIENT_MCP_URL"
+# Get MCP URLs
+TRADE_MCP_URL=$(gcloud run services describe trade-mcp --region $REGION --format 'value(status.url)')
+RISK_MCP_URL=$(gcloud run services describe risk-mcp --region $REGION --format 'value(status.url)')
+MARKET_MCP_URL=$(gcloud run services describe market-mcp --region $REGION --format 'value(status.url)')
+NEWS_MCP_URL=$(gcloud run services describe news-mcp --region $REGION --format 'value(status.url)')
+CLIENT_MCP_URL=$(gcloud run services describe client-mcp --region $REGION --format 'value(status.url)')
+
+export MCP_TRADE_SERVER_URL=$TRADE_MCP_URL
+export MCP_RISK_SERVER_URL=$RISK_MCP_URL
+export MCP_MARKET_SERVER_URL=$MARKET_MCP_URL
+export MCP_NEWS_SERVER_URL=$NEWS_MCP_URL
+export MCP_CLIENT_SERVER_URL=$CLIENT_MCP_URL
+
+./deploy/deploy_agents_service.sh
 
 AGENTS_URL=$(gcloud run services describe agents-service --region $REGION --format 'value(status.url)')
-echo "✅ Agents Service: $AGENTS_URL"
+export AGENTS_SERVICE_URL=$AGENTS_URL
 
-# 4. API Façade
-echo "📦 Deploying API Façade..."
-gcloud run deploy api-facade \
-  --source ./api-facade \
-  --region $REGION \
-  --project $PROJECT_ID \
-  --allow-unauthenticated \
-  --set-env-vars "AGENTS_SERVICE_URL=$AGENTS_URL"
+./deploy/deploy_api_facade.sh
 
 FACADE_URL=$(gcloud run services describe api-facade --region $REGION --format 'value(status.url)')
-echo "✅ API Façade: $FACADE_URL"
 
 echo ""
 echo "🎉 Deployment Complete!"
-echo "Frontend: $FRONTEND_URL"
-echo "API: $FACADE_URL"
+echo "   API: $FACADE_URL"
