@@ -25,7 +25,7 @@ from shared.agent_contracts import (
 )
 
 from agents.orchestrator_agent.agent import OrchestratorAgent
-from services.data_service import DataService
+from services.mcp_data_service import MCPDataService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Starting Agents Service...")
     
     # Initialize data service
-    app.state.data_service = DataService()
+    app.state.data_service = MCPDataService()
     
     # Initialize orchestrator (which initializes all specialist agents)
     app.state.orchestrator = OrchestratorAgent(
