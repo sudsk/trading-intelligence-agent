@@ -73,7 +73,7 @@ class SegmentationAgent:
             return self._get_fallback_segmentation(client_id)
         
         try:
-            # Step 1: Gather data using tools
+            # Step 1: Gather data using tools (now includes HMM switch prob)
             trade_summary = fetch_trades_summary(client_id, self.data_service)
             position_snapshot = fetch_position_snapshot(client_id, self.data_service)
             
@@ -94,11 +94,25 @@ class SegmentationAgent:
             # Step 4: Parse response
             result = self._parse_gemini_response(response.text, client_id)
             
-            # Step 5: Add metadata
+            # Step 5: OVERRIDE with HMM switch probability
+            # HMM is more reliable than Gemini's estimate
+            if 'switch_prob' in trade_summary:
+                logger.info(
+                    f"Using HMM switch prob {trade_summary['switch_prob']:.2f} "
+                    f"(overriding Gemini's estimate)"
+                )
+                result['switchProb'] = trade_summary['switch_prob']
+                result['switch_method'] = 'HMM/change-point'
+                result['switch_components'] = trade_summary.get('switch_components', {})
+                result['switch_reasoning_hmm'] = trade_summary.get('switch_reasoning')
+            else:
+                result['switch_method'] = 'Gemini'
+            
+            # Step 6: Add metadata
             result['clientId'] = client_id
             result['primaryExposure'] = self._get_primary_exposure(position_snapshot)
-            
-            # Step 6: Get client metadata
+
+            # Step 7: Get client metadata
             client_meta = self.data_service.get_client_metadata(client_id)
             if client_meta:
                 result['name'] = client_meta.get('name', client_id)
