@@ -131,6 +131,20 @@ ANALYSIS_PROMPT_TEMPLATE = """Analyze the trading behavior for client {client_id
 Based on this data, classify the client into one of the four segments and assess their strategy stability (switch probability).
 
 Respond with ONLY the JSON output as specified in your instructions.
+
+**Switch Probability Analysis:**
+The HMM/change-point heuristic has computed a switch probability of {switch_prob:.2f}.
+Components:
+- Pattern Instability: {pattern:.3f}
+- Change-Point Detection: {changepoint:.3f}
+- Momentum Shifts: {momentum:.3f}
+- Flip Acceleration: {flip:.3f}
+- Feature Drift: {drift:.3f}
+
+Reasoning: {switch_reasoning}
+
+You may reference this computed switch probability in your analysis, but you should also consider the qualitative factors in the trade summary.
+
 """
 
 
