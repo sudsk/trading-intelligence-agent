@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  trade-mcp:
+    build: ./mcp-servers/trade
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    volumes:
+      - ./mcp-servers/trade/data:/app/data
+
+  risk-mcp:
+    build: ./mcp-servers/risk
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+    volumes:
+      - ./mcp-servers/risk/data:/app/data
+
+  market-mcp:
+    build: ./mcp-servers/market
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+    volumes:
+      - ./mcp-servers/market/data:/app/data
+
+  news-mcp:
+    build: ./mcp-servers/news
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+    volumes:
+      - ./mcp-servers/news/data:/app/data
+
+  client-mcp:
+    build: ./mcp-servers/client
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+    volumes:
+      - ./mcp-servers/client/data:/app/data
+
+  agents-service:
+    build: ./agents-service
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - MCP_TRADE_SERVER_URL=http://trade-mcp:3001
+      - MCP_RISK_SERVER_URL=http://risk-mcp:3002
+      - MCP_MARKET_SERVER_URL=http://market-mcp:3003
+      - MCP_NEWS_SERVER_URL=http://news-mcp:3004
+      - MCP_CLIENT_SERVER_URL=http://client-mcp:3005
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/trading_intelligence}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+    depends_on:
+      - trade-mcp
+      - risk-mcp
+      - market-mcp
+      - news-mcp
+      - client-mcp
+      - db
+
+  api-facade:
+    build: ./api-facade
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - AGENTS_SERVICE_URL=http://agents-service:8001
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/trading_intelligence}
+    depends_on:
+      - agents-service
+      - db
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=trading_intelligence
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
