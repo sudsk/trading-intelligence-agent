@@ -38,7 +38,7 @@
 
 ## 📐 Architecture
 
-![Architecture Diagram](images/cia_arch.png)
+![Architecture Diagram](images/tia_arch.png)
 
 
 ## 📂 Project Structure
