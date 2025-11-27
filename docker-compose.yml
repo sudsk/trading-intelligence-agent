@@ -47,7 +47,9 @@ services:
       - ./mcp-servers/client/data:/app/data
 
   agents-service:
-    build: ./agents-service
+    build: 
+      context: .                              
+      dockerfile: agents-service/Dockerfile
     ports:
       - "8001:8001"
     environment:
@@ -68,7 +70,9 @@ services:
       - db
 
   api-facade:
-    build: ./api-facade
+    build: 
+      context: .                                
+      dockerfile: api-facade/Dockerfile
     ports:
       - "8000:8000"
     environment:
