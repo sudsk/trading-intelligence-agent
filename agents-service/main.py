@@ -25,6 +25,7 @@ from shared.agent_contracts import (
 )
 
 from agents.orchestrator_agent.agent import OrchestratorAgent
+from services.data_service import DataService
 from services.mcp_data_service import MCPDataService
 
 logging.basicConfig(level=logging.INFO)
