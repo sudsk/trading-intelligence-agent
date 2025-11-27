@@ -52,6 +52,8 @@ services:
       dockerfile: agents-service/Dockerfile
     ports:
       - "8001:8001"
+    volumes:                                                    
+      - ~/.config/gcloud:/root/.config/gcloud:ro        
     environment:
       - PORT=8001
       - MCP_TRADE_SERVER_URL=http://trade-mcp:3001
