@@ -58,7 +58,7 @@ docker ps
 
 ```bash
 # Start everything with Docker Compose
-docker-compose up -d
+docker compose up -d
 
 # This starts 8 services:
 # ✅ PostgreSQL (database)
