@@ -93,11 +93,14 @@ def get_orchestrator() -> OrchestratorAgent:
     """Get orchestrator agent instance"""
     return app.state.orchestrator
 
-
+# Dependency for database data service (agent state)
 def get_data_service() -> DataService:
     """Get data service instance"""
     return app.state.data_service
 
+# Dependency for MCP data service
+def get_mcp_data_service() -> MCPDataService:
+    return app.state.mcp_data_service
 
 # ============================================================================
 # Agent Endpoints
