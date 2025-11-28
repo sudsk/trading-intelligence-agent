@@ -23,23 +23,23 @@ const ClientList = ({ clients, selectedClient, onSelectClient }) => {
     <div className="client-list">
       {clients.map((client) => (
         <div
-          key={client.clientId}
-          className={`client-item ${selectedClient === client.clientId ? 'active' : ''}`}
-          onClick={() => onSelectClient(client.clientId)}
+          key={client.client_id}  {/* ← Changed */}
+          className={`client-item ${selectedClient === client.client_id ? 'active' : ''}`}  {/* ← Changed */}
+          onClick={() => onSelectClient(client.client_id)}  {/* ← Changed */}
         >
-          <div className="client-name">{client.clientId}</div>
-          <div className="client-segment">{client.segment}</div>
+          <div className="client-name">{client.name || client.client_id}</div>  {/* ← Changed */}
+          <div className="client-segment">{client.segment || 'N/A'}</div>  {/* ← Added fallback */}
           <div className="client-meta">
-            <span className="client-tag">{client.primaryExposure}</span>
+            <span className="client-tag">{client.sector}</span>  {/* ← Changed from primaryExposure */}
             <div className="switch-prob">
-              <span className={`switch-prob-value ${getProbClass(client.switchProb)}`}>
-                {client.switchProb.toFixed(2)}
+              <span className={`switch-prob-value ${getProbClass(client.switch_prob || 0)}`}>  {/* ← Changed */}
+                {(client.switch_prob || 0).toFixed(2)}  {/* ← Changed */}
               </span>
               <span 
                 className="trend-arrow" 
-                style={{ color: getProbColor(client.switchProb) }}
+                style={{ color: getProbColor(client.switch_prob || 0) }}  {/* ← Changed */}
               >
-                {getTrendArrow(client.switchProb)}
+                {getTrendArrow(client.switch_prob || 0)}  {/* ← Changed */}
               </span>
             </div>
           </div>
