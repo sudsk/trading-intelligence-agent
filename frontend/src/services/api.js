@@ -8,16 +8,16 @@ const api = axios.create({
 });
 
 export const clientsAPI = {
-  getAll: (params = {}) => api.get('/clients/', { params }),           // ✅ Added /
-  getProfile: (clientId) => api.get(`/clients/${clientId}/profile/`),  // ✅ Added /
-  getTimeline: (clientId) => api.get(`/clients/${clientId}/timeline/`),// ✅ Added /
-  getInsights: (clientId) => api.get(`/clients/${clientId}/insights/`),// ✅ Added /
-  getMedia: (clientId) => api.get(`/clients/${clientId}/media/`),      // ✅ Added /
+  getAll: (params = {}) => api.get('/clients/', { params }),           
+  getProfile: (clientId) => api.get(`/clients/${clientId}/profile/`),  
+  getTimeline: (clientId) => api.get(`/clients/${clientId}/timeline/`),
+  getInsights: (clientId) => api.get(`/clients/${clientId}/insights/`),
+  getMedia: (clientId) => api.get(`/clients/${clientId}/media/`),      
 };
 
 export const actionsAPI = {
-  create: (action) => api.post('/actions/', action),                   // ✅ Added /
-  get: (actionId) => api.get(`/actions/${actionId}/`),                 // ✅ Added /
+  create: (action) => api.post('/actions/', action),                  
+  get: (actionId) => api.get(`/actions/${actionId}/`),                 
 };
 
 export default api;
