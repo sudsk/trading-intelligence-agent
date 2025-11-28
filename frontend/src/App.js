@@ -40,6 +40,7 @@ function App() {
   const loadClients = async () => {
     try {
       const response = await clientsAPI.getAll();
+      console.log('API response:', response.data);
       const { clients } = response.data;  // ✅ Destructure
       setClients(clients);
       if (clients.length > 0) {
