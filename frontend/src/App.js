@@ -40,9 +40,10 @@ function App() {
   const loadClients = async () => {
     try {
       const response = await clientsAPI.getAll();
-      setClients(response.data);
-      if (response.data.length > 0) {
-        selectClient(response.data[0].clientId);
+      const { clients } = response.data;  // ✅ Destructure
+      setClients(clients);
+      if (clients.length > 0) {
+        selectClient(clients[0].clientId);
       }
     } catch (error) {
       console.error('Error loading clients:', error);
