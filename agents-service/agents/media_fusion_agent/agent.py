@@ -92,7 +92,7 @@ class MediaFusionAgent:
             
             logger.info(
                 f"✅ Media analysis complete: pressure={result['pressure']}, "
-                f"headlines={result['headlineCount']}"
+                f"headlines={result['headline_count']}"
             )
             
             return result
@@ -229,10 +229,10 @@ class MediaFusionAgent:
             
             return {
                 'pressure': pressure,
-                'sentimentAvg': round(sentiment_avg, 3),
-                'sentimentVelocity': round(sentiment_velocity, 3),
+                'sentiment_avg': round(sentiment_avg, 3),
+                'sentiment_velocity': round(sentiment_velocity, 3),
                 'headlines': top_headlines,
-                'headlineCount': len(original_headlines),
+                'headline_count': len(original_headlines),
                 'reasoning': aggregate.get('reasoning', '')
             }
             
@@ -315,10 +315,10 @@ class MediaFusionAgent:
         
         return {
             'pressure': pressure,
-            'sentimentAvg': round(sentiment_avg, 3),
-            'sentimentVelocity': round(velocity, 3),
+            'sentiment_avg': round(sentiment_avg, 3),
+            'sentiment_velocity': round(velocity, 3),
             'headlines': top_formatted,
-            'headlineCount': count,
+            'headline_count': count,
             'reasoning': 'Fallback rule-based sentiment (Gemini unavailable)'
         }
     
@@ -326,9 +326,9 @@ class MediaFusionAgent:
         """Default response when no headlines available"""
         return {
             'pressure': 'LOW',
-            'sentimentAvg': 0.0,
-            'sentimentVelocity': 0.0,
+            'sentiment_avg': 0.0,
+            'sentiment_velocity': 0.0,
             'headlines': [],
-            'headlineCount': 0,
+            'headline_count': 0,
             'reasoning': 'No headlines available for analysis'
         }
