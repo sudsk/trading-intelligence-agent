@@ -1,12 +1,16 @@
 """
-Client MCP Server - Mock Implementation
+Client MCP Server - Enhanced with Switch Probability Cache
+
+Returns client metadata enriched with latest switch probability from database.
+In production, replace CSV reading with Salesforce/CRM queries.
 """
 import os
 import logging
 from datetime import datetime
 from pathlib import Path
 import pandas as pd
-from typing import Dict, Any, Optional
+import psycopg2
+from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -26,14 +30,86 @@ class MockClientMCPServer:
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(exist_ok=True)
         self.clients_df = self._load_or_generate_clients()
-        self.actions_df = self._load_or_generate_actions()
+        
+        # Database connection for switch probability cache
+        self.database_url = os.getenv(
+            'DATABASE_URL',
+            'postgresql://postgres:postgres@db:5432/trading_intelligence'
+        )
+        
         logger.info(f"✅ Loaded {len(self.clients_df)} clients")
     
-    def _load_or_generate_clients(self) -> pd.DataFrame:
-        file = self.data_dir / "clients.csv"
-        if file.exists():
-            return pd.read_csv(file)
+    def _get_db_connection(self):
+        """Get database connection."""
+        try:
+            return psycopg2.connect(self.database_url)
+        except Exception as e:
+            logger.warning(f"⚠️ Database connection failed: {e}")
+            return None
+    
+    def _get_latest_switch_probs(self, client_ids: List[str] = None) -> Dict[str, Dict]:
+        """
+        Get latest switch probabilities from database.
         
+        Returns dict: {client_id: {switch_prob, computed_at, segment}}
+        """
+        conn = self._get_db_connection()
+        if not conn:
+            return {}
+        
+        try:
+            cursor = conn.cursor()
+            
+            # Get latest switch probability for each client
+            query = """
+                SELECT DISTINCT ON (client_id)
+                    client_id,
+                    switch_prob,
+                    segment,
+                    computed_at
+                FROM switch_probability_history
+                WHERE 1=1
+            """
+            
+            params = []
+            if client_ids:
+                query += " AND client_id = ANY(%s)"
+                params.append(client_ids)
+            
+            query += " ORDER BY client_id, computed_at DESC"
+            
+            cursor.execute(query, params if params else None)
+            rows = cursor.fetchall()
+            
+            result = {}
+            for row in rows:
+                result[row[0]] = {
+                    'switch_prob': float(row[1]) if row[1] else None,
+                    'segment': row[2],
+                    'computed_at': row[3].isoformat() if row[3] else None
+                }
+            
+            cursor.close()
+            conn.close()
+            
+            logger.info(f"✅ Retrieved switch probs for {len(result)} clients from cache")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching switch probs: {e}")
+            if conn:
+                conn.close()
+            return {}
+    
+    def _load_or_generate_clients(self) -> pd.DataFrame:
+        clients_file = self.data_dir / "clients.csv"
+        if clients_file.exists():
+            return pd.read_csv(clients_file)
+        else:
+            return self._generate_clients()
+    
+    def _generate_clients(self) -> pd.DataFrame:
+        """Generate mock client data"""
         clients = [
             {
                 'client_id': 'ACME_FX_023',
@@ -74,104 +150,185 @@ class MockClientMCPServer:
         ]
         
         df = pd.DataFrame(clients)
-        df.to_csv(file, index=False)
+        df.to_csv(self.data_dir / "clients.csv", index=False)
+        logger.info(f"Generated {len(df)} mock clients")
         return df
     
-    def _load_or_generate_actions(self) -> pd.DataFrame:
-        file = self.data_dir / "actions.csv"
-        if file.exists():
-            return pd.read_csv(file)
+    def list_clients(
+        self,
+        search: Optional[str] = None,
+        segment: Optional[str] = None,
+        rm: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        List clients with optional filters.
         
-        return pd.DataFrame(columns=[
-            'action_id', 'client_id', 'action_type', 'title', 
-            'description', 'timestamp', 'status'
-        ])
-    
-    def get_client_metadata(self, client_id: str) -> Dict[str, Any]:
+        Returns clients enriched with latest switch probability from cache.
+        """
         try:
-            client = self.clients_df[self.clients_df['client_id'] == client_id]
-            if client.empty:
-                return {'metadata': {}}
-            return {'metadata': client.iloc[0].to_dict()}
-        except Exception as e:
-            return {'error': str(e), 'metadata': {}}
-    
-    def list_clients(self, search: Optional[str] = None, segment: Optional[str] = None,
-                    rm: Optional[str] = None) -> Dict[str, Any]:
-        try:
-            clients = self.clients_df.copy()
+            df = self.clients_df.copy()
             
+            # Apply filters
             if search:
-                clients = clients[
-                    clients['name'].str.contains(search, case=False, na=False) |
-                    clients['client_id'].str.contains(search, case=False, na=False)
-                ]
+                mask = (
+                    df['name'].str.contains(search, case=False, na=False) |
+                    df['client_id'].str.contains(search, case=False, na=False)
+                )
+                df = df[mask]
             
             if rm:
-                clients = clients[clients['rm'] == rm]
+                df = df[df['rm'] == rm]
             
-            return {'clients': clients.to_dict('records'), 'count': len(clients)}
+            # Get latest switch probabilities from database
+            client_ids = df['client_id'].tolist()
+            switch_probs = self._get_latest_switch_probs(client_ids)
+            
+            # Enrich clients with switch probability data
+            clients = []
+            for _, row in df.iterrows():
+                client = row.to_dict()
+                client_id = client['client_id']
+                
+                # Add cached switch probability data
+                if client_id in switch_probs:
+                    client['switch_prob'] = switch_probs[client_id]['switch_prob']
+                    client['segment'] = switch_probs[client_id]['segment']
+                    client['last_analyzed'] = switch_probs[client_id]['computed_at']
+                else:
+                    client['switch_prob'] = None
+                    client['segment'] = None
+                    client['last_analyzed'] = None
+                
+                clients.append(client)
+            
+            # Apply segment filter after enrichment
+            if segment:
+                clients = [c for c in clients if c.get('segment') == segment]
+            
+            # Sort by switch_prob descending (nulls last)
+            clients.sort(
+                key=lambda x: (x['switch_prob'] is None, -(x['switch_prob'] or 0))
+            )
+            
+            return {"clients": clients}
+            
         except Exception as e:
-            return {'error': str(e), 'clients': []}
+            logger.error(f"Error listing clients: {e}")
+            raise
     
-    def log_action(self, client_id: str, action_type: str, title: str,
-                  description: Optional[str] = None) -> Dict[str, Any]:
+    def get_client_metadata(self, client_id: str) -> Dict[str, Any]:
+        """Get metadata for specific client with cached switch probability"""
         try:
-            action_id = f"ACT{len(self.actions_df)+1:06d}"
-            new_action = {
-                'action_id': action_id,
-                'client_id': client_id,
-                'action_type': action_type,
-                'title': title,
-                'description': description or '',
-                'timestamp': datetime.now().isoformat(),
-                'status': 'PENDING'
-            }
+            client_row = self.clients_df[
+                self.clients_df['client_id'] == client_id
+            ]
             
-            self.actions_df = pd.concat([
-                self.actions_df,
-                pd.DataFrame([new_action])
-            ], ignore_index=True)
+            if client_row.empty:
+                return {"error": f"Client {client_id} not found"}
             
-            self.actions_df.to_csv(self.data_dir / "actions.csv", index=False)
+            client = client_row.iloc[0].to_dict()
             
-            return {'action': new_action, 'success': True}
+            # Enrich with cached switch probability
+            switch_probs = self._get_latest_switch_probs([client_id])
+            if client_id in switch_probs:
+                client['switch_prob'] = switch_probs[client_id]['switch_prob']
+                client['segment'] = switch_probs[client_id]['segment']
+                client['last_analyzed'] = switch_probs[client_id]['computed_at']
+            else:
+                client['switch_prob'] = None
+                client['segment'] = None
+                client['last_analyzed'] = None
+            
+            return {"client": client}
+            
         except Exception as e:
-            return {'error': str(e), 'success': False}
+            logger.error(f"Error fetching client metadata: {e}")
+            raise
+    
+    def log_action(
+        self,
+        client_id: str,
+        action_type: str,
+        title: str,
+        description: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Log an action (stored in database via api-facade)"""
+        return {
+            "action_id": f"ACT_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{client_id}",
+            "status": "logged",
+            "timestamp": datetime.utcnow().isoformat()
+        }
 
-app = FastAPI(title="Client MCP Server", version="1.0.0")
+# Create FastAPI app
+app = FastAPI(title="Client MCP Server")
+
+# Initialize server
 server = MockClientMCPServer()
-
-@app.post("/call_tool", response_model=ToolResponse)
-async def call_tool(request: ToolRequest):
-    try:
-        if request.tool_name == "get_client_metadata":
-            result = server.get_client_metadata(**request.arguments)
-        elif request.tool_name == "list_clients":
-            result = server.list_clients(**request.arguments)
-        elif request.tool_name == "log_action":
-            result = server.log_action(**request.arguments)
-        else:
-            raise HTTPException(404, f"Tool not found: {request.tool_name}")
-        return ToolResponse(result=result)
-    except Exception as e:
-        return ToolResponse(result={}, error=str(e))
-
-@app.get("/tools")
-async def list_tools():
-    return {
-        "tools": [
-            {"name": "get_client_metadata", "description": "Get client details"},
-            {"name": "list_clients", "description": "Search/list clients"},
-            {"name": "log_action", "description": "Log RM action"}
-        ]
-    }
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "clients_loaded": len(server.clients_df)}
+    return {"status": "healthy", "service": "client-mcp"}
+
+@app.get("/tools")
+async def list_tools():
+    """List available tools"""
+    return {
+        "tools": [
+            {
+                "name": "list_clients",
+                "description": "List clients with optional filters, enriched with cached switch probability",
+                "parameters": {
+                    "search": "Optional search term",
+                    "segment": "Optional segment filter",
+                    "rm": "Optional relationship manager filter"
+                }
+            },
+            {
+                "name": "get_client_metadata",
+                "description": "Get metadata for specific client with cached switch probability",
+                "parameters": {
+                    "client_id": "Client identifier"
+                }
+            },
+            {
+                "name": "log_action",
+                "description": "Log a relationship manager action",
+                "parameters": {
+                    "client_id": "Client identifier",
+                    "action_type": "Type of action",
+                    "title": "Action title",
+                    "description": "Optional description"
+                }
+            }
+        ]
+    }
+
+@app.post("/call_tool")
+async def call_tool(request: ToolRequest):
+    """Execute a tool"""
+    try:
+        if request.tool_name == "list_clients":
+            result = server.list_clients(**request.arguments)
+        elif request.tool_name == "get_client_metadata":
+            result = server.get_client_metadata(**request.arguments)
+        elif request.tool_name == "log_action":
+            result = server.log_action(**request.arguments)
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Tool {request.tool_name} not found"
+            )
+        
+        return ToolResponse(result=result)
+        
+    except Exception as e:
+        logger.error(f"Error executing tool {request.tool_name}: {e}")
+        return ToolResponse(
+            result={},
+            error=str(e)
+        )
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", "3005"))
+    port = int(os.getenv("PORT", 3005))
     uvicorn.run(app, host="0.0.0.0", port=port)
