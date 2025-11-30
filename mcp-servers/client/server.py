@@ -1,8 +1,7 @@
 """
-Client MCP Server - Enhanced with Switch Probability Cache
+Client MCP Server - 20 Clients with Database Cache
 
 Returns client metadata enriched with latest switch probability from database.
-In production, replace CSV reading with Salesforce/CRM queries.
 """
 import os
 import logging
@@ -109,8 +108,9 @@ class MockClientMCPServer:
             return self._generate_clients()
     
     def _generate_clients(self) -> pd.DataFrame:
-        """Generate mock client data"""
+        """Generate 20 mock clients with diverse profiles"""
         clients = [
+            # Tier 1 - North America
             {
                 'client_id': 'ACME_FX_023',
                 'name': 'ACME Corporation',
@@ -119,6 +119,44 @@ class MockClientMCPServer:
                 'region': 'North America',
                 'tier': 'Tier 1',
                 'onboarding_date': '2020-03-15'
+            },
+            {
+                'client_id': 'PHOENIX_CAPITAL_031',
+                'name': 'Phoenix Capital Partners',
+                'rm': 'Michael Torres',
+                'sector': 'Private Equity',
+                'region': 'North America',
+                'tier': 'Tier 1',
+                'onboarding_date': '2019-06-20'
+            },
+            {
+                'client_id': 'APEX_TRADING_089',
+                'name': 'Apex Trading Group',
+                'rm': 'Sarah Chen',
+                'sector': 'Prop Trading',
+                'region': 'North America',
+                'tier': 'Tier 1',
+                'onboarding_date': '2021-02-10'
+            },
+            {
+                'client_id': 'PINNACLE_WEALTH_064',
+                'name': 'Pinnacle Wealth Management',
+                'rm': 'James Wong',
+                'sector': 'Wealth Management',
+                'region': 'North America',
+                'tier': 'Tier 1',
+                'onboarding_date': '2018-09-05'
+            },
+            
+            # Tier 1 - Europe
+            {
+                'client_id': 'ATLAS_BOND_012',
+                'name': 'Atlas Fixed Income',
+                'rm': 'James Wong',
+                'sector': 'Asset Management',
+                'region': 'Europe',
+                'tier': 'Tier 1',
+                'onboarding_date': '2018-11-05'
             },
             {
                 'client_id': 'ZEUS_COMM_019',
@@ -130,6 +168,26 @@ class MockClientMCPServer:
                 'onboarding_date': '2019-07-22'
             },
             {
+                'client_id': 'STERLING_FX_041',
+                'name': 'Sterling FX Solutions',
+                'rm': 'Emma Richardson',
+                'sector': 'FX Trading',
+                'region': 'Europe',
+                'tier': 'Tier 1',
+                'onboarding_date': '2020-04-18'
+            },
+            {
+                'client_id': 'HORIZON_GLOBAL_056',
+                'name': 'Horizon Global Macro',
+                'rm': 'Michael Torres',
+                'sector': 'Hedge Fund',
+                'region': 'Europe',
+                'tier': 'Tier 1',
+                'onboarding_date': '2019-12-08'
+            },
+            
+            # Tier 1 - Asia
+            {
                 'client_id': 'TITAN_EQ_008',
                 'name': 'Titan Equity Fund',
                 'rm': 'Sarah Chen',
@@ -139,13 +197,105 @@ class MockClientMCPServer:
                 'onboarding_date': '2021-01-10'
             },
             {
-                'client_id': 'ATLAS_BOND_012',
-                'name': 'Atlas Fixed Income',
+                'client_id': 'QUANTUM_FINANCE_015',
+                'name': 'Quantum Finance Corp',
                 'rm': 'James Wong',
-                'sector': 'Asset Management',
-                'region': 'Europe',
+                'sector': 'Investment Bank',
+                'region': 'Asia',
                 'tier': 'Tier 1',
-                'onboarding_date': '2018-11-05'
+                'onboarding_date': '2017-05-22'
+            },
+            {
+                'client_id': 'NEXUS_CAPITAL_017',
+                'name': 'Nexus Capital Asia',
+                'rm': 'Emma Richardson',
+                'sector': 'Venture Capital',
+                'region': 'Asia',
+                'tier': 'Tier 1',
+                'onboarding_date': '2020-08-14'
+            },
+            
+            # Tier 2 - Diverse
+            {
+                'client_id': 'OLYMPUS_VENTURES_024',
+                'name': 'Olympus Ventures',
+                'rm': 'Sarah Chen',
+                'sector': 'Private Equity',
+                'region': 'Europe',
+                'tier': 'Tier 2',
+                'onboarding_date': '2021-03-12'
+            },
+            {
+                'client_id': 'CORNERSTONE_INV_033',
+                'name': 'Cornerstone Investments',
+                'rm': 'Michael Torres',
+                'sector': 'Asset Management',
+                'region': 'North America',
+                'tier': 'Tier 2',
+                'onboarding_date': '2020-11-20'
+            },
+            {
+                'client_id': 'NOVA_MACRO_045',
+                'name': 'Nova Macro Fund',
+                'rm': 'Emma Richardson',
+                'sector': 'Hedge Fund',
+                'region': 'North America',
+                'tier': 'Tier 2',
+                'onboarding_date': '2021-06-30'
+            },
+            {
+                'client_id': 'SUMMIT_ADVISORS_051',
+                'name': 'Summit Financial Advisors',
+                'rm': 'James Wong',
+                'sector': 'Financial Services',
+                'region': 'Europe',
+                'tier': 'Tier 2',
+                'onboarding_date': '2019-10-15'
+            },
+            {
+                'client_id': 'MERIDIAN_FUND_052',
+                'name': 'Meridian Opportunity Fund',
+                'rm': 'Sarah Chen',
+                'sector': 'Hedge Fund',
+                'region': 'Asia',
+                'tier': 'Tier 2',
+                'onboarding_date': '2020-02-28'
+            },
+            {
+                'client_id': 'SENTINEL_ASSETS_067',
+                'name': 'Sentinel Asset Management',
+                'rm': 'Michael Torres',
+                'sector': 'Asset Management',
+                'region': 'North America',
+                'tier': 'Tier 2',
+                'onboarding_date': '2021-07-05'
+            },
+            {
+                'client_id': 'VANGUARD_MARKETS_078',
+                'name': 'Vanguard Markets Ltd',
+                'rm': 'Emma Richardson',
+                'sector': 'Market Maker',
+                'region': 'Europe',
+                'tier': 'Tier 2',
+                'onboarding_date': '2020-09-12'
+            },
+            {
+                'client_id': 'ROCKFORD_TRUST_088',
+                'name': 'Rockford Trust Company',
+                'rm': 'James Wong',
+                'sector': 'Trust Services',
+                'region': 'Asia',
+                'tier': 'Tier 2',
+                'onboarding_date': '2019-04-18'
+            },
+            {
+                'client_id': 'ECLIPSE_PARTNERS_092',
+                'name': 'Eclipse Trading Partners',
+                'rm': 'Sarah Chen',
+                'sector': 'Prop Trading',
+                'region': 'Europe',
+                'tier': 'Tier 2',
+                'onboarding_date': '2021-05-25'
             }
         ]
         
