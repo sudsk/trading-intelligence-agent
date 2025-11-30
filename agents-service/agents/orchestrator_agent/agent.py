@@ -80,11 +80,11 @@ class OrchestratorAgent:
             )
             
             # Step 4: Adjust switch probability based on media
-            base_switch_prob = segmentation.get('switchProb', 0.3)
+            base_switch_prob = segmentation.get('switch_prob', 0.3)
             adjusted_switch_prob = self._adjust_switch_prob(
                 base_switch_prob=base_switch_prob,
                 media_pressure=media.get('pressure', 'LOW'),
-                sentiment=media.get('sentimentAvg', 0.0)
+                sentiment=media.get('sentiment_avg', 0.0)
             )
             
             if adjusted_switch_prob != base_switch_prob:
@@ -99,11 +99,11 @@ class OrchestratorAgent:
                 client_id=client_id,
                 segment=segmentation.get('segment', 'Unclassified'),
                 switch_prob=adjusted_switch_prob,
-                risk_flags=segmentation.get('riskFlags', []),
+                risk_flags=segmentation.get('risk_flags', []),
                 media_pressure=media.get('pressure', 'LOW'),
-                primary_exposure=segmentation.get('primaryExposure', 'N/A'),
+                primary_exposure=segmentation.get('primary_exposure', 'N/A'),
                 confidence=segmentation.get('confidence', 0.5),
-                sentiment=media.get('sentimentAvg', 0.0),
+                sentiment=media.get('sentiment_avg', 0.0),
                 drivers=segmentation.get('drivers', [])
             )
             
@@ -139,7 +139,7 @@ class OrchestratorAgent:
         exposures = []
         
         # Primary exposure
-        primary = segmentation.get('primaryExposure')
+        primary = segmentation.get('primary_exposure')
         if primary and primary != 'N/A':
             exposures.append(primary)
         
@@ -233,7 +233,7 @@ class OrchestratorAgent:
         
         profile = {
             # Client identification
-            'clientId': client_id,
+            'client_id': client_id,
             'name': client_meta.get('name', client_id) if client_meta else client_id,
             'rm': client_meta.get('rm', 'Unassigned') if client_meta else 'Unassigned',
             'sector': client_meta.get('sector', 'Unknown') if client_meta else 'Unknown',
@@ -241,11 +241,11 @@ class OrchestratorAgent:
             # Segmentation
             'segment': segmentation.get('segment', 'Unclassified'),
             'confidence': segmentation.get('confidence', 0.0),
-            'switchProb': adjusted_switch_prob,
-            'baseSwitchProb': base_switch_prob,
+            'switch_prob': adjusted_switch_prob,
+            'baseswitch_prob': base_switch_prob,
             'drivers': segmentation.get('drivers', []),
-            'riskFlags': segmentation.get('riskFlags', []),
-            'primaryExposure': segmentation.get('primaryExposure', 'N/A'),
+            'risk_flags': segmentation.get('risk_flags', []),
+            'primary_exposure': segmentation.get('primary_exposure', 'N/A'),
             
             # Media analysis
             'media': media,
