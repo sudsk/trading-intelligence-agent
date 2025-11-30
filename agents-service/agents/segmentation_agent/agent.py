@@ -64,7 +64,7 @@ class SegmentationAgent:
             client_id: Client identifier
             
         Returns:
-            Dict with segment, confidence, switchProb, drivers, riskFlags
+            Dict with segment, confidence, switch_prob, drivers, risk_flags
         """
         logger.info(f"🎯 Segmentation Agent analyzing: {client_id}")
         
@@ -101,7 +101,7 @@ class SegmentationAgent:
                     f"Using HMM switch prob {trade_summary['switch_prob']:.2f} "
                     f"(overriding Gemini's estimate)"
                 )
-                result['switchProb'] = trade_summary['switch_prob']
+                result['switch_prob'] = trade_summary['switch_prob']
                 result['switch_method'] = 'HMM/change-point'
                 result['switch_components'] = trade_summary.get('switch_components', {})
                 result['switch_reasoning_hmm'] = trade_summary.get('switch_reasoning')
@@ -109,8 +109,8 @@ class SegmentationAgent:
                 result['switch_method'] = 'Gemini'
             
             # Step 6: Add metadata
-            result['clientId'] = client_id
-            result['primaryExposure'] = self._get_primary_exposure(position_snapshot)
+            result['client_id'] = client_id
+            result['primary_exposure'] = self._get_primary_exposure(position_snapshot)
 
             # Step 7: Get client metadata
             client_meta = self.data_service.get_client_metadata(client_id)
@@ -122,7 +122,7 @@ class SegmentationAgent:
             logger.info(
                 f"✅ Segmentation complete: {result['segment']} "
                 f"(confidence={result['confidence']:.2f}, "
-                f"switchProb={result['switchProb']:.2f})"
+                f"switch_prob={result['switch_prob']:.2f})"
             )
             
             return result
@@ -157,7 +157,7 @@ class SegmentationAgent:
             result = json.loads(text)
             
             # Validate required fields
-            required_fields = ['segment', 'confidence', 'switchProb', 'drivers', 'riskFlags']
+            required_fields = ['segment', 'confidence', 'switch_prob', 'drivers', 'risk_flags']
             for field in required_fields:
                 if field not in result:
                     raise ValueError(f"Missing required field: {field}")
@@ -170,15 +170,15 @@ class SegmentationAgent:
             
             # Validate ranges
             result['confidence'] = max(0.0, min(1.0, float(result['confidence'])))
-            result['switchProb'] = max(0.15, min(0.85, float(result['switchProb'])))
+            result['switch_prob'] = max(0.15, min(0.85, float(result['switch_prob'])))
             
             # Ensure drivers is list
             if not isinstance(result['drivers'], list):
                 result['drivers'] = [str(result['drivers'])]
             
-            # Ensure riskFlags is list
-            if not isinstance(result['riskFlags'], list):
-                result['riskFlags'] = [str(result['riskFlags'])] if result['riskFlags'] else []
+            # Ensure risk_flags is list
+            if not isinstance(result['risk_flags'], list):
+                result['risk_flags'] = [str(result['risk_flags'])] if result['risk_flags'] else []
             
             return result
             
@@ -242,28 +242,28 @@ class SegmentationAgent:
                 switch_prob = 0.35
             
             return {
-                'clientId': client_id,
+                'client_id': client_id,
                 'segment': segment,
                 'confidence': confidence,
-                'switchProb': switch_prob,
+                'switch_prob': switch_prob,
                 'drivers': [
                     f"Fallback classification based on {trade_count} trades",
                     f"Average holding period: {avg_holding:.1f} days"
                 ],
-                'riskFlags': ['Gemini unavailable - using heuristic classification'],
-                'primaryExposure': self._get_primary_exposure(position_snapshot),
+                'risk_flags': ['Gemini unavailable - using heuristic classification'],
+                'primary_exposure': self._get_primary_exposure(position_snapshot),
                 'reasoning': 'Fallback heuristic used due to Gemini unavailability'
             }
             
         except Exception as e:
             logger.error(f"Error in fallback segmentation: {e}")
             return {
-                'clientId': client_id,
+                'client_id': client_id,
                 'segment': 'Unclassified',
                 'confidence': 0.0,
-                'switchProb': 0.30,
+                'switch_prob': 0.30,
                 'drivers': ['Error in analysis'],
-                'riskFlags': ['Classification failed'],
-                'primaryExposure': 'N/A',
+                'risk_flags': ['Classification failed'],
+                'primary_exposure': 'N/A',
                 'reasoning': f'Error: {str(e)}'
             }
