@@ -4,6 +4,7 @@ Clients Routes - API Façade
 Handles all client-related endpoints by proxying to agents-service or Client MCP.
 """
 from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import JSONResponse
 from typing import Optional, List
 import logging
 import httpx
@@ -11,6 +12,7 @@ import os
 
 from services.agent_client import AgentClient
 from services.data_service import DataService
+
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +69,7 @@ async def list_clients(
         
         logger.info(f"✅ Retrieved {len(clients)} clients from Client MCP")
         
-        return {
+        return JSONResponse(content={
             "clients": clients,
             "count": len(clients),
             "filters": {
@@ -75,7 +77,7 @@ async def list_clients(
                 "segment": segment,
                 "rm": rm
             }
-        }
+        })
         
     except httpx.HTTPError as e:
         logger.error(f"❌ HTTP error calling Client MCP: {e}")
@@ -123,7 +125,7 @@ async def get_client_profile(
             f"switchProb={profile.get('switchProb')})"
         )
         
-        return profile
+        return JSONResponse(content=profile)
         
     except HTTPException:
         # Re-raise HTTP exceptions from agent_client
@@ -171,11 +173,11 @@ async def get_client_timeline(
         
         logger.info(f"✅ Retrieved {len(timeline)} timeline events")
         
-        return {
+        return JSONResponse(content={
             "clientId": client_id,
             "timeline": timeline,
             "months": months
-        }
+        })
         
     except Exception as e:
         logger.error(f"❌ Error getting timeline for {client_id}: {e}")
@@ -214,11 +216,11 @@ async def get_client_insights(
         
         logger.info(f"✅ Retrieved {len(insights)} insights")
         
-        return {
+        return JSONResponse(content={
             "clientId": client_id,
             "insights": insights,
             "count": len(insights)
-        }
+        })
         
     except Exception as e:
         logger.error(f"❌ Error getting insights for {client_id}: {e}")
@@ -287,11 +289,11 @@ async def get_client_media(
             f"headlines={media.get('headlineCount')})"
         )
         
-        return {
+        return JSONResponse(content={
             "clientId": client_id,
             "exposures": exposures[:5],
             **media
-        }
+        })
         
     except httpx.HTTPError as e:
         logger.error(f"❌ HTTP error: {e}")
