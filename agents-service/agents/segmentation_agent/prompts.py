@@ -79,13 +79,13 @@ You MUST respond with ONLY valid JSON in this exact format:
 {
   "segment": "Trend Follower",
   "confidence": 0.82,
-  "switchProb": 0.53,
+  "switch_prob": 0.53,
   "drivers": [
     "Strong momentum alignment - 85% of trades follow market direction",
     "Short average holding period of 3.2 days indicates active trend capture",
     "Low position flip frequency suggests directional conviction"
   ],
-  "riskFlags": [
+  "risk_flags": [
     "EUR concentration at 72% creates single-exposure risk",
     "Increased position volatility in last 14 days"
   ],
@@ -97,24 +97,24 @@ You MUST respond with ONLY valid JSON in this exact format:
 
 1. **segment** must be EXACTLY one of: "Trend Follower", "Mean Reverter", "Hedger", "Trend Setter"
 2. **confidence** must be 0.0-1.0 (how confident in the classification)
-3. **switchProb** must be 0.15-0.85 (probability of strategy switching in 14 days)
+3. **switch_prob** must be 0.15-0.85 (probability of strategy switching in 14 days)
 4. **drivers** must be array of 2-3 strings, specific and quantitative
-5. **riskFlags** must be array of 0-5 strings, only significant risks
+5. **risk_flags** must be array of 0-5 strings, only significant risks
 6. **reasoning** should explain the classification and switch probability assessment
 
 ## Examples
 
 **Example 1: Clear Trend Follower**
 Input: High trade frequency, 3-day avg holding, 80% momentum-aligned trades
-Output: segment="Trend Follower", confidence=0.88, switchProb=0.32
+Output: segment="Trend Follower", confidence=0.88, switch_prob=0.32
 
 **Example 2: Mean Reverter with Drift**
 Input: Frequent flips (12 in 30 days), counter-trend positioning, but recent trend-aligned trades
-Output: segment="Mean Reverter", confidence=0.72, switchProb=0.61 (drift detected)
+Output: segment="Mean Reverter", confidence=0.72, switch_prob=0.61 (drift detected)
 
 **Example 3: Stable Hedger**
 Input: 45-day avg holding, balanced positions, low turnover
-Output: segment="Hedger", confidence=0.85, switchProb=0.22
+Output: segment="Hedger", confidence=0.85, switch_prob=0.22
 
 Remember: You are analyzing professional trading behavior. Be precise, quantitative, and actionable.
 """
@@ -205,13 +205,13 @@ Output:
 {
   "segment": "Trend Follower",
   "confidence": 0.92,
-  "switchProb": 0.28,
+  "switch_prob": 0.28,
   "drivers": [
     "Very high trade frequency (5 trades/day) with momentum alignment",
     "Ultra-short 2.8-day holding period indicates active trend capture",
     "85% market order usage shows aggressive momentum-chasing behavior"
   ],
-  "riskFlags": [
+  "risk_flags": [
     "High turnover may lead to excessive transaction costs"
   ],
   "reasoning": "Classic high-frequency trend following with strong consistency. Low flip frequency and stable pattern indicate low switch risk."
@@ -232,13 +232,13 @@ Output:
 {
   "segment": "Mean Reverter",
   "confidence": 0.65,
-  "switchProb": 0.68,
+  "switch_prob": 0.68,
   "drivers": [
     "High flip frequency (18/month) indicates reversal-seeking behavior",
     "Moderate 6.5-day holding consistent with range-bound strategies",
     "Mixed order types suggest flexible approach to entry/exit"
   ],
-  "riskFlags": [
+  "risk_flags": [
     "Recent pattern change - flip frequency dropping, holds extending",
     "Strategy appears to be drifting toward trend following"
   ],
@@ -260,13 +260,13 @@ Output:
 {
   "segment": "Hedger",
   "confidence": 0.89,
-  "switchProb": 0.19,
+  "switch_prob": 0.19,
   "drivers": [
     "Very long 52-day holding period reflects defensive mindset",
     "Low trade frequency (0.5/day) and minimal flips show conviction",
     "Options usage indicates structured hedging approach"
   ],
-  "riskFlags": [],
+  "risk_flags": [],
   "reasoning": "Textbook hedging behavior with extreme consistency. Very low switch probability due to stable, predictable patterns."
 }
 ```
