@@ -80,9 +80,11 @@ services:
     environment:
       - PORT=8000
       - AGENTS_SERVICE_URL=http://agents-service:8001
+      - MCP_CLIENT_SERVER_URL=http://client-mcp:3005
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/trading_intelligence}
     depends_on:
       - agents-service
+      - client-mcp
       - db
 
   db:
