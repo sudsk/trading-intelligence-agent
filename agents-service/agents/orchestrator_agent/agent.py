@@ -217,19 +217,21 @@ class OrchestratorAgent:
         """
         Assemble complete client profile from agent outputs.
         
-        Args:
-            client_id: Client ID
-            segmentation: Segmentation agent output
-            media: Media agent output
-            recommendations: NBA agent output
-            base_switch_prob: Original switch probability
-            adjusted_switch_prob: Media-adjusted switch probability
-            
         Returns:
-            Complete profile dict
+            Complete profile dict matching AnalyzeResponse contract
         """
         # Get client metadata
         client_meta = self.data_service.get_client_metadata(client_id)
+        
+        # Format media to match MediaAnalysisResult contract
+        media_formatted = {
+            'pressure': media.get('pressure', 'LOW'),
+            'sentiment_avg': media.get('sentiment_avg', 0.0),
+            'sentiment_velocity': media.get('sentiment_velocity', 0.0),
+            'headlines': media.get('headlines', []),
+            'headline_count': media.get('headline_count', 0),
+            'reasoning': media.get('reasoning', '')
+        }
         
         profile = {
             # Client identification
@@ -247,19 +249,14 @@ class OrchestratorAgent:
             'risk_flags': segmentation.get('risk_flags', []),
             'primary_exposure': segmentation.get('primary_exposure', 'N/A'),
             
-            # Media analysis
-            'media': media,
+            # Media analysis (formatted to match contract)
+            'media': media_formatted,
             
             # Recommendations
             'recommendations': recommendations,
             
             # Metadata (optional)
             'features': segmentation.get('features'),
-            'reasoning': {
-                'segmentation': segmentation.get('reasoning'),
-                'media': media.get('reasoning'),
-                'switch_adjustment': f'Adjusted from {base_switch_prob:.2f} to {adjusted_switch_prob:.2f} based on {media.get("pressure")} media pressure'
-            }
         }
         
         return profile
