@@ -242,7 +242,7 @@ class OrchestratorAgent:
             'segment': segmentation.get('segment', 'Unclassified'),
             'confidence': segmentation.get('confidence', 0.0),
             'switch_prob': adjusted_switch_prob,
-            'baseswitch_prob': base_switch_prob,
+            'base_switch_prob': base_switch_prob,
             'drivers': segmentation.get('drivers', []),
             'risk_flags': segmentation.get('risk_flags', []),
             'primary_exposure': segmentation.get('primary_exposure', 'N/A'),
