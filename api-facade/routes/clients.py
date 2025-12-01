@@ -40,7 +40,7 @@ async def list_clients(
     Returns:
         List of client summaries
     """
-    logger.info(f"📋 Listing clients: search={search}, segment={segment}, rm={rm}")
+    logger.info(f" Listing clients: search={search}, segment={segment}, rm={rm}")
     
     try:
         # Get Client MCP server URL
@@ -67,7 +67,7 @@ async def list_clients(
             # Apply limit
             clients = clients[:limit]
         
-        logger.info(f"✅ Retrieved {len(clients)} clients from Client MCP")
+        logger.info(f" Retrieved {len(clients)} clients from Client MCP")
         
         return JSONResponse(content={
             "clients": clients,
@@ -80,13 +80,13 @@ async def list_clients(
         })
         
     except httpx.HTTPError as e:
-        logger.error(f"❌ HTTP error calling Client MCP: {e}")
+        logger.error(f" HTTP error calling Client MCP: {e}")
         raise HTTPException(
             status_code=503,
             detail=f"Client MCP server unavailable: {str(e)}"
         )
     except Exception as e:
-        logger.error(f"❌ Error listing clients: {e}", exc_info=True)
+        logger.error(f" Error listing clients: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve clients: {str(e)}"
@@ -113,14 +113,14 @@ async def get_client_profile(
     Returns:
         Complete client profile with all analysis
     """
-    logger.info(f"👤 Getting profile for: {client_id}")
+    logger.info(f" Getting profile for: {client_id}")
     
     try:
         # Call agents-service (orchestrator endpoint)
         profile = await agent_client.get_client_profile(client_id)
         
         logger.info(
-            f"✅ Profile retrieved: {client_id} "
+            f" Profile retrieved: {client_id} "
             f"(segment={profile.get('segment')}, "
             f"switchProb={profile.get('switchProb')})"
         )
@@ -131,7 +131,7 @@ async def get_client_profile(
         # Re-raise HTTP exceptions from agent_client
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting profile for {client_id}: {e}", exc_info=True)
+        logger.error(f" Error getting profile for {client_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve profile: {str(e)}"
@@ -157,7 +157,7 @@ async def get_client_timeline(
     Returns:
         List of regime periods with start/end dates
     """
-    logger.info(f"📅 Getting timeline for: {client_id} ({months} months)")
+    logger.info(f" Getting timeline for: {client_id} ({months} months)")
     
     try:
         # Check if client_regimes table exists and has method
@@ -171,7 +171,7 @@ async def get_client_timeline(
             logger.warning("get_client_timeline not implemented, returning empty")
             timeline = []
         
-        logger.info(f"✅ Retrieved {len(timeline)} timeline events")
+        logger.info(f" Retrieved {len(timeline)} timeline events")
         
         return JSONResponse(content={
             "clientId": client_id,
@@ -180,7 +180,7 @@ async def get_client_timeline(
         })
         
     except Exception as e:
-        logger.error(f"❌ Error getting timeline for {client_id}: {e}")
+        logger.error(f" Error getting timeline for {client_id}: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve timeline: {str(e)}"
@@ -205,7 +205,7 @@ async def get_client_insights(
     Returns:
         List of insight items (signals, actions, outcomes)
     """
-    logger.info(f"💡 Getting insights for: {client_id}")
+    logger.info(f" Getting insights for: {client_id}")
     
     try:
         # Get insights from database (alerts table)
@@ -214,7 +214,7 @@ async def get_client_insights(
             limit=limit
         )
         
-        logger.info(f"✅ Retrieved {len(insights)} insights")
+        logger.info(f" Retrieved {len(insights)} insights")
         
         return JSONResponse(content={
             "clientId": client_id,
@@ -223,7 +223,7 @@ async def get_client_insights(
         })
         
     except Exception as e:
-        logger.error(f"❌ Error getting insights for {client_id}: {e}")
+        logger.error(f" Error getting insights for {client_id}: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve insights: {str(e)}"
@@ -247,7 +247,7 @@ async def get_client_media(
     Returns:
         Media analysis with headlines and pressure assessment
     """
-    logger.info(f"📰 Getting media for: {client_id}")
+    logger.info(f" Getting media for: {client_id}")
     
     try:
         # Get client metadata from Client MCP to find exposures
@@ -284,7 +284,7 @@ async def get_client_media(
         )
         
         logger.info(
-            f"✅ Media analysis complete: {client_id} "
+            f" Media analysis complete: {client_id} "
             f"(pressure={media.get('pressure')}, "
             f"headlines={media.get('headlineCount')})"
         )
@@ -296,13 +296,13 @@ async def get_client_media(
         })
         
     except httpx.HTTPError as e:
-        logger.error(f"❌ HTTP error: {e}")
+        logger.error(f" HTTP error: {e}")
         raise HTTPException(
             status_code=503,
             detail=f"MCP server unavailable: {str(e)}"
         )
     except Exception as e:
-        logger.error(f"❌ Error getting media for {client_id}: {e}")
+        logger.error(f" Error getting media for {client_id}: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve media: {str(e)}"
