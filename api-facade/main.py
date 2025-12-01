@@ -1,12 +1,12 @@
 """
-API Façade - Thin routing layer
+API Facade - Thin routing layer
 
 Proxies requests to agents-service and provides SSE streaming for alerts.
 """
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
-from fastapi.exceptions import HTTPException
+from fastapi.exceptions import HTTPException as FastAPIHTTPException
 
 from contextlib import asynccontextmanager
 import logging
@@ -15,9 +15,7 @@ import asyncio
 import json
 from datetime import datetime
 
-
 import sys
-import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from services.agent_client import AgentClient
@@ -35,19 +33,19 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize services on startup, cleanup on shutdown"""
-    logger.info("🚀 Starting API Façade...")
+    logger.info("Starting API Facade...")
     
     # Initialize services
     app.state.agent_client = AgentClient()
     app.state.alert_queue = AlertQueue()
     app.state.data_service = DataService()
     
-    logger.info("✅ API Façade initialized successfully")
+    logger.info("API Facade initialized successfully")
     logger.info(f"   - Agents Service URL: {app.state.agent_client.base_url}")
     
     yield
     
-    logger.info("🛑 Shutting down API Façade...")
+    logger.info("Shutting down API Facade...")
 
 
 # ============================================================================
@@ -56,17 +54,26 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Trading Intelligence API",
-    description="API façade for trading intelligence agents",
+    description="API facade for trading intelligence agents",
     version="1.0.0",
     lifespan=lifespan
 )
 
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+# ============================================================================
+# Exception Handlers - MUST BE BEFORE MIDDLEWARE
+# ============================================================================
+
+@app.exception_handler(FastAPIHTTPException)
+async def http_exception_handler(request: Request, exc: FastAPIHTTPException):
     """Custom handler to ensure HTTPExceptions return JSONResponse"""
+    logger.warning(f"HTTPException: {exc.status_code} - {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.detail},
+        content={
+            "error": exc.detail,
+            "status_code": exc.status_code,
+            "timestamp": datetime.utcnow().isoformat()
+        }
     )
 
 @app.exception_handler(Exception)
@@ -75,10 +82,18 @@ async def general_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error"},
+        content={
+            "error": "Internal server error",
+            "error_type": "unexpected_error",
+            "timestamp": datetime.utcnow().isoformat(),
+            "details": str(exc) if os.getenv("DEBUG") else None
+        }
     )
+
+# ============================================================================
+# CORS Middleware
+# ============================================================================
     
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -127,8 +142,8 @@ app.include_router(demo.router, prefix="/api/v1/demo", tags=["demo"])
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {
-        "service": "Trading Intelligence API Façade",
+    return JSONResponse(content={
+        "service": "Trading Intelligence API Facade",
         "version": "1.0.0",
         "description": "Thin routing layer to agents service",
         "endpoints": {
@@ -141,7 +156,7 @@ async def root():
             "alerts": "/alerts/stream",
             "demo": "/api/v1/demo/trigger-alert"
         }
-    }
+    })
 
 
 @app.get("/health")
@@ -153,47 +168,24 @@ async def health_check(agent_client: AgentClient = Depends(get_agent_client)):
         # Check agents service
         agents_health = await agent_client.check_health()
         
-        return {
+        return JSONResponse(content={
             "status": "healthy",
             "facade": "healthy",
             "agents_service": agents_health.get("status", "unknown"),
             "timestamp": datetime.utcnow().isoformat()
-        }
+        })
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        return {
-            "status": "degraded",
-            "facade": "healthy",
-            "agents_service": "unhealthy",
-            "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
-        }
-
-
-# ============================================================================
-# Error Handlers
-# ============================================================================
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    """Custom HTTP exception handler"""
-    return {
-        "error": exc.detail,
-        "status_code": exc.status_code,
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    """Catch-all exception handler"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return {
-        "error": "Internal server error",
-        "error_type": "unexpected_error",
-        "timestamp": datetime.utcnow().isoformat(),
-        "details": str(exc) if os.getenv("DEBUG") else None
-    }
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "degraded",
+                "facade": "healthy",
+                "agents_service": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
 
 
 if __name__ == "__main__":
