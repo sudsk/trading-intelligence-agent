@@ -41,10 +41,10 @@ function App() {
     try {
       const response = await clientsAPI.getAll();
       console.log('API response:', response.data);
-      const { clients } = response.data;  // ✅ Destructure
+      const { clients } = response.data;  
       setClients(clients);
       if (clients.length > 0) {
-        selectClient(clients[0].clientId);
+        selectClient(clients[0].client_id);
       }
     } catch (error) {
       console.error('Error loading clients:', error);
