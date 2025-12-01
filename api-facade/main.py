@@ -3,9 +3,11 @@ API Façade - Thin routing layer
 
 Proxies requests to agents-service and provides SSE streaming for alerts.
 """
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.exceptions import HTTPException
+
 from contextlib import asynccontextmanager
 import logging
 import os
@@ -59,6 +61,23 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Custom handler to ensure HTTPExceptions return JSONResponse"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Catch-all handler for unexpected exceptions"""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
+    
 # CORS
 app.add_middleware(
     CORSMiddleware,
