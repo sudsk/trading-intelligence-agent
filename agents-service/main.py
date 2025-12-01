@@ -105,24 +105,18 @@ def get_mcp_data_service() -> MCPDataService:
 # ============================================================================
 # Agent Endpoints
 # ============================================================================
-
 @app.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_client(
     request: AnalyzeRequest,
     orchestrator: OrchestratorAgent = Depends(get_orchestrator)
 ):
-    """
-    Complete client profile analysis (main orchestrator endpoint).
-    
-    This is the primary endpoint called by the api-facade.
-    Coordinates all specialist agents to build a complete profile.
-    """
+    """Complete client profile analysis"""
     logger.info(f"📊 Analyzing client: {request.client_id}")
     
     try:
         start_time = datetime.utcnow()
         
-        # Call orchestrator (which coordinates all agents)
+        # Call orchestrator
         profile = orchestrator.get_client_profile(
             client_id=request.client_id
         )
@@ -138,15 +132,22 @@ async def analyze_client(
             'version': '1.0.0'
         }
         
-        logger.info(
-            f"✅ Analysis complete for {request.client_id} "
-            f"in {execution_time:.2f}s "
-            f"(segment={profile.get('segment')}, "
-            f"switch_prob={profile.get('switchProb'):.2f})"
-        )
+        # Validate against contract before returning
+        try:
+            from shared.agent_contracts import AnalyzeResponse
+            validated = AnalyzeResponse(**profile)
+            return validated.model_dump()  # Return dict that matches contract
+        except Exception as validation_error:
+            logger.error(f"Response validation error: {validation_error}")
+            logger.error(f"Profile keys: {profile.keys()}")
+            logger.error(f"Media keys: {profile.get('media', {}).keys()}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Response validation failed: {str(validation_error)}"
+            )
         
-        return profile
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Error analyzing {request.client_id}: {e}", exc_info=True)
         raise HTTPException(
