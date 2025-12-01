@@ -106,10 +106,9 @@ class MediaFusionAgent:
         if not exposures:
             return pd.DataFrame()
         
-        cutoff_time = datetime.now() - timedelta(hours=self.lookback_hours)
         headlines = self.data_service.get_headlines(
             instruments=exposures,
-            start_time=cutoff_time
+            hours=self.lookback_hours
         )
         
         if not headlines.empty:
