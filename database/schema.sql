@@ -47,6 +47,19 @@ CREATE INDEX idx_actions_status ON actions(status);
 -- Mix of all segments with varied probabilities for realistic demo
 
 
+-- Client Regimes History (for Timeline)
+CREATE TABLE client_regimes (
+    id SERIAL PRIMARY KEY,
+    client_id VARCHAR(50),
+    segment VARCHAR(50) NOT NULL,
+    period VARCHAR(50) NOT NULL,  -- e.g., "Q1 2024", "Jan-Mar 2024"
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_client_regimes_client ON client_regimes(client_id, start_date DESC);
+
 -- Sample switch probability data for 20 demo clients
 INSERT INTO switch_probability_history (client_id, switch_prob, confidence, segment, drivers, risk_flags, computed_at)
 VALUES 
@@ -152,4 +165,114 @@ VALUES
    '{"pattern_break": 0.07, "changepoint": 0.08, "momentum_flip": 0.07, "regime_flip": 0.04, "drift": 0.03}',
    '[]',
    NOW() - INTERVAL '17 minutes')
+ON CONFLICT DO NOTHING;
+
+-- Sample Timeline Data for Demo Clients
+INSERT INTO client_regimes (client_id, segment, period, description, start_date, end_date) VALUES
+  -- ACME_FX_023 - Evolved from Hedger to Trend Follower
+  ('ACME_FX_023', 'Hedger', 'Q1 2024', 'Conservative hedging strategy', '2024-01-01', '2024-03-31'),
+  ('ACME_FX_023', 'Mean Reverter', 'Q2 2024', 'Shifted to mean reversion after volatility spike', '2024-04-01', '2024-06-30'),
+  ('ACME_FX_023', 'Trend Follower', 'Q3-Q4 2024', 'Adopted momentum following strategy', '2024-07-01', NULL),
+  
+  -- PHOENIX_CAPITAL_031 - Consistent Trend Follower
+  ('PHOENIX_CAPITAL_031', 'Trend Follower', 'Q1-Q2 2024', 'Strong momentum bias', '2024-01-01', '2024-06-30'),
+  ('PHOENIX_CAPITAL_031', 'Trend Follower', 'Q3-Q4 2024', 'Continued momentum strategy', '2024-07-01', NULL),
+  
+  -- NOVA_MACRO_045 - Volatile switches
+  ('NOVA_MACRO_045', 'Trend Setter', 'Q1 2024', 'Aggressive positioning', '2024-01-01', '2024-03-31'),
+  ('NOVA_MACRO_045', 'Mean Reverter', 'Q2 2024', 'Pivot to contrarian trades', '2024-04-01', '2024-06-30'),
+  ('NOVA_MACRO_045', 'Mean Reverter', 'Q3-Q4 2024', 'Maintained reversal strategy', '2024-07-01', NULL),
+  
+  -- ATLAS_BOND_012 - Evolved to Trend Setter
+  ('ATLAS_BOND_012', 'Hedger', 'Q1-Q2 2024', 'Risk-off positioning', '2024-01-01', '2024-06-30'),
+  ('ATLAS_BOND_012', 'Trend Setter', 'Q3-Q4 2024', 'More aggressive trend setting', '2024-07-01', NULL),
+  
+  -- SENTINEL_ASSETS_067 - Stable Hedger
+  ('SENTINEL_ASSETS_067', 'Hedger', 'Q1-Q4 2024', 'Consistent hedging approach', '2024-01-01', NULL),
+  
+  -- ZEUS_COMM_019 - Mean Reverter throughout
+  ('ZEUS_COMM_019', 'Mean Reverter', 'Q1-Q2 2024', 'Commodity mean reversion', '2024-01-01', '2024-06-30'),
+  ('ZEUS_COMM_019', 'Mean Reverter', 'Q3-Q4 2024', 'Continued mean reversion', '2024-07-01', NULL),
+  
+  -- TITAN_EQ_008 - Stable Hedger
+  ('TITAN_EQ_008', 'Hedger', 'Q1-Q4 2024', 'Equity hedging strategy', '2024-01-01', NULL),
+  
+  -- MERIDIAN_FUND_052 - Trend Setter evolution
+  ('MERIDIAN_FUND_052', 'Trend Follower', 'Q1 2024', 'Momentum trading', '2024-01-01', '2024-03-31'),
+  ('MERIDIAN_FUND_052', 'Trend Setter', 'Q2-Q4 2024', 'Leading market moves', '2024-04-01', NULL),
+  
+  -- APEX_TRADING_089 - Consistent Trend Follower
+  ('APEX_TRADING_089', 'Trend Follower', 'Q1-Q4 2024', 'Systematic trend following', '2024-01-01', NULL),
+  
+  -- OLYMPUS_VENTURES_024 - Mean Reverter
+  ('OLYMPUS_VENTURES_024', 'Mean Reverter', 'Q1-Q4 2024', 'Value-focused reversals', '2024-01-01', NULL),
+  
+  -- QUANTUM_FINANCE_015 - Hedger with recent evolution
+  ('QUANTUM_FINANCE_015', 'Hedger', 'Q1-Q3 2024', 'Conservative hedging', '2024-01-01', '2024-09-30'),
+  ('QUANTUM_FINANCE_015', 'Hedger', 'Q4 2024', 'Maintained hedging focus', '2024-10-01', NULL),
+  
+  -- VANGUARD_MARKETS_078 - Trend Setter
+  ('VANGUARD_MARKETS_078', 'Trend Setter', 'Q1-Q4 2024', 'Market making with directional bias', '2024-01-01', NULL),
+  
+  -- CORNERSTONE_INV_033 - Stable Trend Follower
+  ('CORNERSTONE_INV_033', 'Trend Follower', 'Q1-Q4 2024', 'Long-term momentum', '2024-01-01', NULL),
+  
+  -- HORIZON_GLOBAL_056 - Mean Reverter
+  ('HORIZON_GLOBAL_056', 'Mean Reverter', 'Q1-Q4 2024', 'Global macro reversals', '2024-01-01', NULL),
+  
+  -- STERLING_FX_041 - Stable Hedger
+  ('STERLING_FX_041', 'Hedger', 'Q1-Q4 2024', 'FX hedging specialist', '2024-01-01', NULL),
+  
+  -- ECLIPSE_PARTNERS_092 - Trend Setter
+  ('ECLIPSE_PARTNERS_092', 'Trend Setter', 'Q1-Q4 2024', 'Prop trading momentum', '2024-01-01', NULL),
+  
+  -- PINNACLE_WEALTH_064 - Trend Follower
+  ('PINNACLE_WEALTH_064', 'Trend Follower', 'Q1-Q4 2024', 'Client portfolio momentum', '2024-01-01', NULL),
+  
+  -- NEXUS_CAPITAL_017 - Mean Reverter
+  ('NEXUS_CAPITAL_017', 'Mean Reverter', 'Q1-Q4 2024', 'VC-backed reversals', '2024-01-01', NULL),
+  
+  -- ROCKFORD_TRUST_088 - Hedger
+  ('ROCKFORD_TRUST_088', 'Hedger', 'Q1-Q4 2024', 'Trust fund hedging', '2024-01-01', NULL),
+  
+  -- SUMMIT_ADVISORS_051 - Trend Setter
+  ('SUMMIT_ADVISORS_051', 'Trend Setter', 'Q1-Q4 2024', 'Advisory-driven trends', '2024-01-01', NULL)
+ON CONFLICT DO NOTHING;
+
+
+-- Sample Alerts/Insights for Demo (last 7 days)
+INSERT INTO alerts (client_id, alert_type, severity, old_switch_prob, new_switch_prob, reason, acknowledged, created_at) VALUES
+  -- High priority alerts (recent)
+  ('ACME_FX_023', 'SIGNAL', 'HIGH', 0.650, 0.720, 'Switch probability increased by 11% - pattern break detected in EURUSD positions', FALSE, NOW() - INTERVAL '2 hours'),
+  ('PHOENIX_CAPITAL_031', 'SIGNAL', 'CRITICAL', 0.750, 0.810, 'Critical threshold breached - sustained deviation from normal trading pattern', FALSE, NOW() - INTERVAL '4 hours'),
+  ('NOVA_MACRO_045', 'SIGNAL', 'HIGH', 0.680, 0.760, 'Volatility spike detected - position concentration risk elevated', FALSE, NOW() - INTERVAL '8 hours'),
+  
+  -- Actions taken (yesterday)
+  ('ACME_FX_023', 'ACTION', 'MEDIUM', NULL, NULL, 'RM outreach scheduled - Sarah Chen to contact client within 48 hours', FALSE, NOW() - INTERVAL '1 day'),
+  ('PHOENIX_CAPITAL_031', 'ACTION', 'HIGH', NULL, NULL, 'Emergency risk review meeting scheduled with Michael Torres', FALSE, NOW() - INTERVAL '1 day'),
+  ('ATLAS_BOND_012', 'ACTION', 'MEDIUM', NULL, NULL, 'Portfolio rebalancing proposal sent to client', FALSE, NOW() - INTERVAL '1 day'),
+  
+  -- Outcomes (2-3 days ago)
+  ('SENTINEL_ASSETS_067', 'OUTCOME', 'LOW', 0.650, 0.580, 'Client meeting successful - agreed to hedge 30% of exposure, switch prob decreased', TRUE, NOW() - INTERVAL '2 days'),
+  ('ATLAS_BOND_012', 'OUTCOME', 'MEDIUM', 0.720, 0.680, 'Risk mitigation implemented - diversification strategy adopted', TRUE, NOW() - INTERVAL '2 days'),
+  ('ZEUS_COMM_019', 'OUTCOME', 'LOW', 0.520, 0.480, 'Client engagement positive - relationship strengthened', TRUE, NOW() - INTERVAL '3 days'),
+  
+  -- Medium priority signals (3-5 days ago)
+  ('MERIDIAN_FUND_052', 'SIGNAL', 'MEDIUM', 0.480, 0.520, 'Segment drift detected - moving toward trend setting behavior', FALSE, NOW() - INTERVAL '3 days'),
+  ('QUANTUM_FINANCE_015', 'SIGNAL', 'MEDIUM', 0.500, 0.540, 'Position concentration increasing in Asian FX pairs', FALSE, NOW() - INTERVAL '4 days'),
+  ('VANGUARD_MARKETS_078', 'SIGNAL', 'MEDIUM', 0.410, 0.440, 'Trading frequency increasing - monitoring required', FALSE, NOW() - INTERVAL '5 days'),
+  
+  -- More actions (4-5 days ago)
+  ('NOVA_MACRO_045', 'ACTION', 'HIGH', NULL, NULL, 'Risk limit review initiated - compliance check requested', FALSE, NOW() - INTERVAL '4 days'),
+  ('SENTINEL_ASSETS_067', 'ACTION', 'MEDIUM', NULL, NULL, 'Client strategy review call scheduled', TRUE, NOW() - INTERVAL '5 days'),
+  
+  -- Low priority signals (5-7 days ago)
+  ('CORNERSTONE_INV_033', 'SIGNAL', 'LOW', 0.260, 0.280, 'Minor shift in trading pattern - within normal range', FALSE, NOW() - INTERVAL '5 days'),
+  ('HORIZON_GLOBAL_056', 'SIGNAL', 'LOW', 0.290, 0.310, 'Holding period slightly extended - low risk', FALSE, NOW() - INTERVAL '6 days'),
+  ('STERLING_FX_041', 'SIGNAL', 'LOW', 0.220, 0.240, 'Stable client - minor fluctuation detected', FALSE, NOW() - INTERVAL '6 days'),
+  ('PINNACLE_WEALTH_064', 'SIGNAL', 'LOW', 0.310, 0.330, 'Portfolio adjustment noted - monitoring continues', FALSE, NOW() - INTERVAL '7 days'),
+  
+  -- Older outcomes (7 days ago)
+  ('OLYMPUS_VENTURES_024', 'OUTCOME', 'LOW', 0.420, 0.390, 'Quarterly review completed - client satisfied with performance', TRUE, NOW() - INTERVAL '7 days'),
+  ('APEX_TRADING_089', 'OUTCOME', 'MEDIUM', 0.500, 0.460, 'Hedging strategy implemented - reduced exposure risk', TRUE, NOW() - INTERVAL '7 days')
 ON CONFLICT DO NOTHING;
