@@ -9,7 +9,7 @@ const Timeline = ({ timeline }) => {
         Strategy Evolution Timeline
       </div>
       <div className="timeline">
-        {timeline.map((item, idx) => (
+        {Array.isArray(timeline) && timeline.map((item, idx) => (
           <div key={idx} className="timeline-item">
             <div className="timeline-marker"></div>
             <div className="timeline-content">
