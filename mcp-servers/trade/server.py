@@ -38,7 +38,9 @@ class MockTradeMCPServer:
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
         else:
-            return self._generate_trades()
+            raise FileNotFoundError(
+                f"trades.csv not found in {self.data_dir}. "
+            )
     
     def _generate_trades(self) -> pd.DataFrame:
         import random
