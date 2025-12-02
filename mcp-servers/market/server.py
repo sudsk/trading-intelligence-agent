@@ -34,37 +34,11 @@ class MockMarketMCPServer:
             df = pd.read_csv(file)
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
-        
-        import random
-        instruments = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCHF']
-        
-        bars = []
-        base_date = datetime.now() - timedelta(days=90)
-        
-        for inst in instruments:
-            price = random.uniform(1.0, 1.5)
-            for day in range(90):
-                date = base_date + timedelta(days=day)
-                open_price = price
-                high = price * random.uniform(1.0, 1.02)
-                low = price * random.uniform(0.98, 1.0)
-                close = random.uniform(low, high)
-                
-                bars.append({
-                    'instrument': inst,
-                    'timestamp': date.isoformat(),
-                    'open': round(open_price, 5),
-                    'high': round(high, 5),
-                    'low': round(low, 5),
-                    'close': round(close, 5),
-                    'volume': random.randint(1000000, 50000000)
-                })
-                price = close
-        
-        df = pd.DataFrame(bars)
-        df.to_csv(file, index=False)
-        return df
-    
+        else:
+            raise FileNotFoundError(
+                f"market_bars.csv not found in {self.data_dir}. "
+            )
+
     def get_market_bars(self, instruments: List[str], start_date: Optional[str] = None,
                        end_date: Optional[str] = None) -> Dict[str, Any]:
         try:
