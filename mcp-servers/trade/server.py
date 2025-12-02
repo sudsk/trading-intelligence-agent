@@ -42,39 +42,6 @@ class MockTradeMCPServer:
                 f"trades.csv not found in {self.data_dir}. "
             )
     
-    def _generate_trades(self) -> pd.DataFrame:
-        import random
-        clients = ['ACME_FX_023', 'ZEUS_COMM_019', 'TITAN_EQ_008', 'ATLAS_BOND_012']
-        instruments = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCHF']
-        sides = ['BUY', 'SELL']
-        order_types = ['MARKET', 'LIMIT']
-        venues = ['LMAX', 'EBS', 'Hotspot', 'Currenex']
-        
-        trades = []
-        base_date = datetime.now() - timedelta(days=90)
-        
-        for i in range(2000):
-            trade = {
-                'trade_id': f"TRD{i+1:06d}",
-                'client_id': random.choice(clients),
-                'instrument': random.choice(instruments),
-                'side': random.choice(sides),
-                'quantity': random.randint(100000, 5000000),
-                'price': round(random.uniform(1.0, 1.5), 5),
-                'timestamp': (base_date + timedelta(
-                    days=random.randint(0, 90),
-                    hours=random.randint(0, 23)
-                )).isoformat(),
-                'order_type': random.choice(order_types),
-                'venue': random.choice(venues)
-            }
-            trades.append(trade)
-        
-        df = pd.DataFrame(trades)
-        df.to_csv(self.data_dir / "trades.csv", index=False)
-        logger.info(f"Generated {len(df)} mock trades")
-        return df
-    
     def get_client_trades(self, client_id: str, start_date: Optional[str] = None, 
                          end_date: Optional[str] = None) -> Dict[str, Any]:
         try:
