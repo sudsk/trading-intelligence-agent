@@ -33,51 +33,19 @@ class MockRiskMCPServer:
         file = self.data_dir / "positions.csv"
         if file.exists():
             return pd.read_csv(file)
-        
-        import random
-        clients = ['ACME_FX_023', 'ZEUS_COMM_019', 'TITAN_EQ_008', 'ATLAS_BOND_012']
-        instruments = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCHF']
-        
-        positions = []
-        for client in clients:
-            for inst in random.sample(instruments, k=random.randint(2, 4)):
-                positions.append({
-                    'client_id': client,
-                    'instrument': inst,
-                    'net_position': random.randint(-5000000, 5000000),
-                    'gross_position': random.randint(1000000, 10000000),
-                    'avg_entry_price': round(random.uniform(1.0, 1.5), 5),
-                    'unrealized_pnl': random.randint(-50000, 50000),
-                    'timestamp': datetime.now().isoformat()
-                })
-        
-        df = pd.DataFrame(positions)
-        df.to_csv(file, index=False)
-        return df
+        else:
+            raise FileNotFoundError(
+                f"positions.csv not found in {self.data_dir}. "
+            )
     
     def _load_or_generate_risk_metrics(self) -> pd.DataFrame:
         file = self.data_dir / "risk_metrics.csv"
         if file.exists():
             return pd.read_csv(file)
-        
-        import random
-        clients = ['ACME_FX_023', 'ZEUS_COMM_019', 'TITAN_EQ_008', 'ATLAS_BOND_012']
-        
-        metrics = []
-        for client in clients:
-            metrics.append({
-                'client_id': client,
-                'var_95': random.randint(50000, 500000),
-                'var_99': random.randint(100000, 800000),
-                'leverage': round(random.uniform(1.0, 5.0), 2),
-                'concentration_risk': round(random.uniform(0.3, 0.9), 2),
-                'sharpe_ratio': round(random.uniform(-0.5, 2.0), 2),
-                'timestamp': datetime.now().isoformat()
-            })
-        
-        df = pd.DataFrame(metrics)
-        df.to_csv(file, index=False)
-        return df
+        else:
+            raise FileNotFoundError(
+                f"risk_metrics.csv not found in {self.data_dir}. "
+            )
     
     def get_client_positions(self, client_id: str) -> Dict[str, Any]:
         try:
