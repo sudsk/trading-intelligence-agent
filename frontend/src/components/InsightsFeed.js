@@ -5,9 +5,12 @@ const InsightsFeed = ({ insights }) => {
 
   if (!insights || insights.length === 0) return null;
 
-  const filteredInsights = filter === 'All' 
-    ? insights 
-    : insights.filter(i => i.type === filter.toUpperCase());
+  const filteredInsights = React.useMemo(() => {
+    if (!Array.isArray(insights)) return [];
+    return filter === 'All' 
+      ? insights 
+      : insights.filter(i => i.type === filter.toUpperCase());
+  }, [insights, filter]);
 
   const getIconForType = (type) => {
     switch (type) {
