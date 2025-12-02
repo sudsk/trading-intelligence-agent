@@ -34,45 +34,10 @@ class MockNewsMCPServer:
             df = pd.read_csv(file)
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
-        
-        import random
-        instruments = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCHF']
-        sources = ['Reuters', 'Bloomberg', 'FT', 'WSJ']
-        
-        headlines_templates = [
-            "{currency} Falls on Weak Economic Data",
-            "Central Bank Signals Rate Hold for {currency}",
-            "{currency} Rallies on Strong PMI",
-            "Political Uncertainty Weighs on {currency}",
-            "{currency} Steady After Jobs Report",
-            "Trade Tensions Impact {currency}",
-            "{currency} Hits 6-Month High",
-            "Investors Flee to Safety, {currency} Drops"
-        ]
-        
-        headlines = []
-        base_date = datetime.now() - timedelta(hours=72)
-        
-        for i in range(200):
-            inst = random.choice(instruments)
-            currency = inst[:3]
-            template = random.choice(headlines_templates)
-            
-            headlines.append({
-                'headline_id': f"HDL{i+1:05d}",
-                'instrument': inst,
-                'title': template.format(currency=currency),
-                'source': random.choice(sources),
-                'timestamp': (base_date + timedelta(
-                    hours=random.randint(0, 72)
-                )).isoformat(),
-                'sentiment': random.choice(['positive', 'negative', 'neutral']),
-                'sentiment_score': round(random.uniform(-1.0, 1.0), 2)
-            })
-        
-        df = pd.DataFrame(headlines)
-        df.to_csv(file, index=False)
-        return df
+        else:
+            raise FileNotFoundError(
+                f"headlines.csv not found in {self.data_dir}. "
+            )  
     
     def get_headlines(self, instruments: List[str], hours: int = 72) -> Dict[str, Any]:
         try:
