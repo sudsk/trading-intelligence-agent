@@ -21,7 +21,7 @@ const ProfileCard = ({ profile }) => {
         <div className="metric">
           <div className="metric-label">Switch Probability (14d)</div>
           <div className="metric-value" style={{ color: 'var(--uui-critical-60)' }}>
-            {profile.switchProb.toFixed(2)}
+            {client.switchProb ? client.switchProb.toFixed(2) : '0'}
           </div>
         </div>
         <div className="metric">
