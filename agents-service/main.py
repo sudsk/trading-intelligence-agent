@@ -6,6 +6,7 @@ Designed to run on Cloud Run now, easily migrate to Agent Engine later.
 """
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
 import os
@@ -330,23 +331,28 @@ async def root():
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     """Custom HTTP exception handler"""
-    return {
-        "error": exc.detail,
-        "status_code": exc.status_code,
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail,
+            "status_code": exc.status_code,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    )
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     """Catch-all exception handler"""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return {
-        "error": "Internal server error",
-        "error_type": "unexpected_error",
-        "timestamp": datetime.utcnow().isoformat(),
-        "details": str(exc) if os.getenv("DEBUG") else None
-    }
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "error_type": "unexpected_error",
+            "timestamp": datetime.utcnow().isoformat(),
+            "details": str(exc) if os.getenv("DEBUG") else None
+        }
+    )
 
 
 if __name__ == "__main__":
