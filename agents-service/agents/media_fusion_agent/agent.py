@@ -216,10 +216,10 @@ class MediaFusionAgent:
                 )
                 
                 top_headlines.append({
-                    'headlineId': h.get('headline_id', ''),
+                    'headline_id': h.get('headline_id', ''),
                     'title': h.get('title', ''),
                     'sentiment': h.get('sentiment', 'neutral'),
-                    'sentimentScore': float(h.get('sentiment_score', 0.0)),
+                    'sentiment_score': float(h.get('sentiment_score', 0.0)),
                     'timestamp': original.get('timestamp', datetime.now().isoformat()),
                     'instrument': original.get('instrument', ''),
                     'source': original.get('source', ''),
@@ -301,10 +301,10 @@ class MediaFusionAgent:
         top = headlines_df.head(5).to_dict('records')
         top_formatted = [
             {
-                'headlineId': h.get('headlineId', ''),
+                'headline_id': h.get('headlineId', ''),
                 'title': h['title'],
                 'sentiment': h['sentiment'],
-                'sentimentScore': round(h['sentimentScore'], 2),
+                'sentiment_score': round(h['sentimentScore'], 2),
                 'timestamp': h['timestamp'].isoformat() if pd.notna(h.get('timestamp')) else None,
                 'instrument': h.get('instrument', ''),
                 'source': h.get('source', '')
