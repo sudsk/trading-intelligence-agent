@@ -104,9 +104,10 @@ class MockClientMCPServer:
         clients_file = self.data_dir / "clients.csv"
         if clients_file.exists():
             return pd.read_csv(clients_file)
-        except Exception as e:
-            logger.error(f"❌ Error loading clients: {e}")
-            return {}
+        else:
+            raise FileNotFoundError(
+                f"clients.csv not found in {self.data_dir}. "
+            )
     
     def list_clients(
         self,
