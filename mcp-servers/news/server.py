@@ -40,21 +40,38 @@ class MockNewsMCPServer:
             )  
     
     def get_headlines(self, instruments: List[str], hours: int = 72) -> Dict[str, Any]:
+        logger.info(f"🔍 get_headlines called: instruments={instruments}, hours={hours}")
         try:
+            logger.info(f"📊 DataFrame shape: {self.headlines_df.shape}")
+            
             cutoff = datetime.now() - timedelta(hours=hours)
+            logger.info(f"⏰ Cutoff time: {cutoff}")
+            
             headlines = self.headlines_df[
                 (self.headlines_df['instrument'].isin(instruments)) &
                 (self.headlines_df['timestamp'] >= cutoff)
             ].copy()
             
+            logger.info(f"✂️ Filtered to {len(headlines)} headlines")
+            
             headlines_list = headlines.to_dict('records')
-            for headline in headlines_list:
+            logger.info(f"📋 Converted to list: {len(headlines_list)} items")
+            
+            logger.info("🔄 Starting timestamp conversion loop...")
+            for i, headline in enumerate(headlines_list):
+                if i % 10 == 0:  # Log every 10th item
+                    logger.info(f"   Processing item {i}...")
                 if isinstance(headline['timestamp'], pd.Timestamp):
                     headline['timestamp'] = headline['timestamp'].isoformat()
-                    headline['published_at'] = headline['timestamp'] 
+                    headline['published_at'] = headline['timestamp']  # Add this too
             
-            return {'headlines': headlines_list, 'count': len(headlines_list)}
+            logger.info("✅ Loop completed")
+            result = {'headlines': headlines_list, 'count': len(headlines_list)}
+            logger.info(f"📤 Returning result with {len(headlines_list)} headlines")
+            return result
+            
         except Exception as e:
+            logger.error(f"❌ Error in get_headlines: {e}", exc_info=True)
             return {'error': str(e), 'headlines': []}
     
     def get_sentiment(self, headline_ids: List[str]) -> Dict[str, Any]:
