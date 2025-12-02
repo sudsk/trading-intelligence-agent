@@ -3,14 +3,15 @@ import React, { useState, useMemo } from 'react';
 const InsightsFeed = ({ insights }) => {
   const [filter, setFilter] = useState('All');
 
-  if (!insights || insights.length === 0) return null;
-
   const filteredInsights = useMemo(() => {
     if (!Array.isArray(insights)) return [];
     return filter === 'All' 
       ? insights 
       : insights.filter(i => i.type === filter.toUpperCase());
   }, [insights, filter]);
+
+  // Early return AFTER hooks
+  if (!insights || insights.length === 0) return null;
 
   const getIconForType = (type) => {
     switch (type) {
