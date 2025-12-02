@@ -1,0 +1,21 @@
+client_id,name,rm,sector,region,tier,onboarding_date
+ACME_FX_023,ACME Corporation,Sarah Chen,Technology,North America,Tier 1,2020-03-15
+PHOENIX_CAPITAL_031,Phoenix Capital Partners,Michael Torres,Private Equity,North America,Tier 1,2019-06-20
+APEX_TRADING_089,Apex Trading Group,Sarah Chen,Prop Trading,North America,Tier 1,2021-02-10
+PINNACLE_WEALTH_064,Pinnacle Wealth Management,James Wong,Wealth Management,North America,Tier 1,2018-09-05
+ATLAS_BOND_012,Atlas Fixed Income,James Wong,Asset Management,Europe,Tier 1,2018-11-05
+ZEUS_COMM_019,Zeus Commodities,Michael Torres,Commodities,Europe,Tier 1,2019-07-22
+STERLING_FX_041,Sterling FX Solutions,Emma Richardson,FX Trading,Europe,Tier 1,2020-04-18
+HORIZON_GLOBAL_056,Horizon Global Macro,Michael Torres,Hedge Fund,Europe,Tier 1,2019-12-08
+TITAN_EQ_008,Titan Equity Fund,Sarah Chen,Asset Management,Asia,Tier 2,2021-01-10
+QUANTUM_FINANCE_015,Quantum Finance Corp,James Wong,Investment Bank,Asia,Tier 1,2017-05-22
+NEXUS_CAPITAL_017,Nexus Capital Asia,Emma Richardson,Venture Capital,Asia,Tier 1,2020-08-14
+OLYMPUS_VENTURES_024,Olympus Ventures,Sarah Chen,Private Equity,Europe,Tier 2,2021-03-12
+CORNERSTONE_INV_033,Cornerstone Investments,Michael Torres,Asset Management,North America,Tier 2,2020-11-20
+NOVA_MACRO_045,Nova Macro Fund,Emma Richardson,Hedge Fund,North America,Tier 2,2021-06-30
+SUMMIT_ADVISORS_051,Summit Financial Advisors,James Wong,Financial Services,Europe,Tier 2,2019-10-15
+MERIDIAN_FUND_052,Meridian Opportunity Fund,Sarah Chen,Hedge Fund,Asia,Tier 2,2020-02-28
+SENTINEL_ASSETS_067,Sentinel Asset Management,Michael Torres,Asset Management,North America,Tier 2,2021-07-05
+VANGUARD_MARKETS_078,Vanguard Markets Ltd,Emma Richardson,Market Maker,Europe,Tier 2,2020-09-12
+ROCKFORD_TRUST_088,Rockford Trust Company,James Wong,Trust Services,Asia,Tier 2,2019-04-18
+ECLIPSE_PARTNERS_092,Eclipse Trading Partners,Sarah Chen,Prop Trading,Europe,Tier 2,2021-05-25
