@@ -51,6 +51,7 @@ class MockNewsMCPServer:
             for headline in headlines_list:
                 if isinstance(headline['timestamp'], pd.Timestamp):
                     headline['timestamp'] = headline['timestamp'].isoformat()
+                    headline['published_at'] = headline['timestamp'] 
             
             return {'headlines': headlines_list, 'count': len(headlines_list)}
         except Exception as e:
