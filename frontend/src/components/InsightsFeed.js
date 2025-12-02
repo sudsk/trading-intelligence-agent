@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const InsightsFeed = ({ insights }) => {
   const [filter, setFilter] = useState('All');
 
   if (!insights || insights.length === 0) return null;
 
-  const filteredInsights = React.useMemo(() => {
+  const filteredInsights = useMemo(() => {
     if (!Array.isArray(insights)) return [];
     return filter === 'All' 
       ? insights 
