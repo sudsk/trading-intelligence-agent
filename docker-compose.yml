@@ -63,6 +63,7 @@ services:
       - MCP_CLIENT_SERVER_URL=http://client-mcp:3005
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/trading_intelligence}
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     depends_on:
       - trade-mcp
       - risk-mcp
