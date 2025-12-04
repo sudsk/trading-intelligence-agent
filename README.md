@@ -24,9 +24,10 @@ Profiles each trading client into behavioral segments (Trend Follower, Mean Reve
 
 ---
 
-## 🏛️ Architecture
+## Architecture
 
 ![Architecture Diagram](images/tia_arch.png)
+
 
 ```
 ┌─────────────┐
@@ -65,6 +66,14 @@ Profiles each trading client into behavioral segments (Trend Follower, Mean Reve
               └──────────────┘  • Actions
                                 • Switch probability history
 ```
+
+## Agent Data Model
+
+![Agent Data Model](images/er.png)
+
+## MCP Server Specification
+
+![TradeMCP](images/TradeMCP.png)
 
 ---
 
