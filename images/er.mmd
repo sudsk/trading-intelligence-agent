@@ -1,0 +1,54 @@
+erDiagram
+    CLIENT {
+        string client_id PK
+        string name
+        string sector
+    }
+    SWITCH_PROBABILITY_HISTORY {
+        int id PK
+        string client_id FK
+        decimal switch_prob
+        decimal confidence
+        string segment
+        jsonb drivers
+        jsonb risk_flags
+        timestamp computed_at
+        timestamp created_at
+    }
+    ALERTS {
+        int id PK
+        string client_id FK
+        string alert_type
+        decimal old_switch_prob
+        decimal new_switch_prob
+        text reason
+        string severity
+        boolean acknowledged
+        timestamp created_at
+    }
+    ACTIONS {
+        uuid id PK
+        string client_id FK
+        string action_type
+        string product
+        text description
+        string status
+        string outcome
+        text outcome_description
+        timestamp created_at
+        timestamp updated_at
+    }
+    CLIENT_REGIMES {
+        int id PK
+        string client_id FK
+        string segment
+        string period
+        text description
+        date start_date
+        date end_date
+        timestamp created_at
+    }
+    CLIENT ||--o{ SWITCH_PROBABILITY_HISTORY : "has history"
+    CLIENT ||--o{ ALERTS : "triggers"
+    CLIENT ||--o{ ACTIONS : "has actions"
+    CLIENT ||--o{ CLIENT_REGIMES : "has regimes"
