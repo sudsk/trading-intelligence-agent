@@ -204,7 +204,7 @@ class OrchestratorAgent:
         adjusted = max(0.15, min(0.85, adjusted))
         
         return round(adjusted, 2)
-    
+
     def _assemble_profile(
         self,
         client_id: str,
@@ -214,14 +214,27 @@ class OrchestratorAgent:
         base_switch_prob: float,
         adjusted_switch_prob: float
     ) -> Dict[str, Any]:
-        """
-        Assemble complete client profile from agent outputs.
+        """Assemble complete client profile from agent outputs."""
         
-        Returns:
-            Complete profile dict matching AnalyzeResponse contract
-        """
-        # Get client metadata
+        # Get client metadata (includes cached switch_prob from database)
         client_meta = self.data_service.get_client_metadata(client_id)
+        
+        # ✅ ADD THIS: Use database values if available
+        db_switch_prob = None
+        db_segment = None
+        
+        if client_meta and 'switch_prob' in client_meta:
+            db_switch_prob = client_meta.get('switch_prob')
+            db_segment = client_meta.get('segment')
+            
+            if db_switch_prob is not None:
+                logger.info(
+                    f"📊 Using cached switch_prob from database: {db_switch_prob:.2f} "
+                    f"(segment: {db_segment})"
+                )
+                # Override with database values (source of truth)
+                base_switch_prob = db_switch_prob
+                db_segment = db_segment or segmentation.get('segment', 'Unclassified')
         
         # Format media to match MediaAnalysisResult contract
         media_formatted = {
@@ -240,11 +253,11 @@ class OrchestratorAgent:
             'rm': client_meta.get('rm', 'Unassigned') if client_meta else 'Unassigned',
             'sector': client_meta.get('sector', 'Unknown') if client_meta else 'Unknown',
             
-            # Segmentation
-            'segment': segmentation.get('segment', 'Unclassified'),
+            # Segmentation - USE DATABASE VALUES AS SOURCE OF TRUTH
+            'segment': db_segment if db_segment else segmentation.get('segment', 'Unclassified'),
             'confidence': segmentation.get('confidence', 0.0),
-            'switch_prob': adjusted_switch_prob,
-            'base_switch_prob': base_switch_prob,
+            'switch_prob': adjusted_switch_prob,  # Can still be adjusted by media
+            'base_switch_prob': db_switch_prob if db_switch_prob is not None else base_switch_prob,
             'drivers': segmentation.get('drivers', []),
             'risk_flags': segmentation.get('risk_flags', []),
             'primary_exposure': segmentation.get('primary_exposure', 'N/A'),
@@ -259,7 +272,7 @@ class OrchestratorAgent:
             'features': segmentation.get('features'),
         }
         
-        return profile
+        return profile    
     
     def get_agent_health(self) -> Dict[str, Any]:
         """
