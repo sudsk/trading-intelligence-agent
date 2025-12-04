@@ -1,0 +1,31 @@
+---
+config:
+  layout: dagre
+  theme: default
+---
+classDiagram
+    class ClientMCP {
+        +list_clients(search: str, segment: str) ClientList
+        +get_client_metadata(client_id: str) ClientWrapper
+    }
+
+    class ClientList {
+        +clients: List~Client~
+    }
+    class ClientWrapper {
+        +client: Client
+    }
+    class Client {
+        +client_id: str
+        +name: str
+        +sector: str
+        +rm: str
+        +aum: float
+        +switch_prob: float
+        +segment: str
+    }
+
+    ClientMCP ..> ClientList : returns
+    ClientMCP ..> ClientWrapper : returns
+    ClientList *-- Client
+    ClientWrapper *-- Client

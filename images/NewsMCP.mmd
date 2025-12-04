@@ -1,0 +1,34 @@
+---
+config:
+  layout: dagre
+  theme: default
+---
+classDiagram
+    class NewsMCP {
+        +get_headlines(instruments: List, hours: int) HeadlineList
+        +get_sentiment(headline_ids: List) SentimentMap
+    }
+
+    class HeadlineList {
+        +headlines: List~Headline~
+        +count: int
+    }
+    class Headline {
+        +headline_id: str
+        +title: str
+        +source: str
+        +timestamp: datetime
+        +url: str
+    }
+    class SentimentMap {
+        +sentiments: Map~Id, SentimentData~
+    }
+    class SentimentData {
+        +sentiment: str
+        +score: float
+    }
+
+    NewsMCP ..> HeadlineList : returns
+    NewsMCP ..> SentimentMap : returns
+    HeadlineList *-- Headline
+    SentimentMap *-- SentimentData

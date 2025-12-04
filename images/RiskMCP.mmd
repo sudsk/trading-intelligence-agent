@@ -1,0 +1,23 @@
+---
+config:
+  layout: dagre
+  theme: default
+---
+classDiagram
+    class RiskMCP {
+        +get_risk_metrics(client_id: str) RiskMetrics
+        +get_features(client_id: str, days: int) ClientFeatures
+    }
+
+    class RiskMetrics {
+        +metrics: Map~String, Value~
+    }
+    note for RiskMetrics "Keys: VaR, Leverage, MarginUtil"
+
+    class ClientFeatures {
+        +features: Map~String, Value~
+    }
+    note for ClientFeatures "Keys: momentum_beta, holding_period"
+
+    RiskMCP ..> RiskMetrics : returns
+    RiskMCP ..> ClientFeatures : returns

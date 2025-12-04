@@ -1,0 +1,38 @@
+---
+config:
+  layout: dagre
+  theme: default
+---
+classDiagram
+    class TradeMCP {
+        +get_client_trades(client_id: str, days: int) TradeList
+        +get_open_positions(client_id: str) PositionList
+    }
+    
+    class TradeList {
+        +trades: List~Trade~
+    }
+    class Trade {
+        +trade_id: str
+        +symbol: str
+        +side: str
+        +quantity: float
+        +price: float
+        +timestamp: datetime
+    }
+    
+    class PositionList {
+        +positions: List~Position~
+    }
+    class Position {
+        +symbol: str
+        +quantity: float
+        +avg_price: float
+        +current_price: float
+        +unrealized_pnl: float
+    }
+
+    TradeMCP ..> TradeList : returns
+    TradeMCP ..> PositionList : returns
+    TradeList *-- Trade
+    PositionList *-- Position
