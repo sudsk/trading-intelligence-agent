@@ -73,7 +73,9 @@ Profiles each trading client into behavioral segments (Trend Follower, Mean Reve
 
 ## MCP Server Specification
 
-![TradeMCP](images/TradeMCP.png)
+![TradeMCP](images/TradeMCP.png) 
+
+![RiskMCP](images/RiskMCP.png)
 
 ---
 
