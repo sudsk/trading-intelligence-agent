@@ -77,6 +77,12 @@ Profiles each trading client into behavioral segments (Trend Follower, Mean Reve
 
 ![RiskMCP](images/RiskMCP.png)
 
+![RiskMCP](images/MarketMCP.png)
+
+![RiskMCP](images/ClientMCP.png)
+
+![RiskMCP](images/NewsMCP.png)
+
 ---
 
 ## 🚀 Quick Start
