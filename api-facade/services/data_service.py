@@ -417,3 +417,61 @@ class DataService:
         except Exception as e:
             logger.error(f"❌ Error fetching all actions: {e}")
             return []
+            
+    def get_client_timeline(
+        self,
+        client_id: str,
+        months: int = 6
+    ) -> List[Dict[str, Any]]:
+        """
+        Get historical regime timeline for client.
+        
+        Args:
+            client_id: Client identifier
+            months: Number of months of history
+            
+        Returns:
+            List of regime periods
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            query = """
+                SELECT 
+                    segment,
+                    start_date,
+                    end_date,
+                    switch_prob,
+                    confidence
+                FROM client_regimes
+                WHERE client_id = %s
+                  AND start_date > NOW() - INTERVAL '%s months'
+                ORDER BY start_date DESC
+            """
+            
+            cursor.execute(query, (client_id, months))
+            rows = cursor.fetchall()
+            
+            timeline = []
+            for row in rows:
+                period_start = row[1].strftime('%B %Y') if row[1] else 'Unknown'
+                period_end = row[2].strftime('%B %Y') if row[2] else 'Present'
+                
+                timeline.append({
+                    'period': f"{period_start} - {period_end}",
+                    'segment': row[0],
+                    'description': f"Switch probability: {row[3]:.0%}" if row[3] else "Active regime",
+                    'start_date': row[1].isoformat() if row[1] else None,
+                    'end_date': row[2].isoformat() if row[2] else None,
+                    'confidence': float(row[4]) if row[4] else None
+                })
+            
+            cursor.close()
+            conn.close()
+            
+            return timeline
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching timeline: {e}")
+            return []
