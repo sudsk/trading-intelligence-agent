@@ -53,7 +53,7 @@ services:
     ports:
       - "8001:8001"
     volumes:                                                    
-      - ~/.config/gcloud:/root/.config/gcloud:ro        
+      - ~/gcp/agents-sa-key.json:/root/agents-sa-key.json:ro    
     environment:
       - PORT=8001
       - MCP_TRADE_SERVER_URL=http://trade-mcp:3001
@@ -63,7 +63,7 @@ services:
       - MCP_CLIENT_SERVER_URL=http://client-mcp:3005
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/trading_intelligence}
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/agents-sa-key.json
     depends_on:
       - trade-mcp
       - risk-mcp
