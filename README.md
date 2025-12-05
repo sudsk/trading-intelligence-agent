@@ -29,44 +29,6 @@ Profiles each trading client into behavioral segments (Trend Follower, Mean Reve
 ![Architecture Diagram](images/tia_arch.png)
 
 
-```
-┌─────────────┐
-│   React     │  Frontend (Port 3000)
-│   Frontend  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ API Façade  │  Thin routing layer (Port 8000)
-│  (FastAPI)  │  • SSE streaming
-└──────┬──────┘  • Action logging
-       │
-       ▼
-┌─────────────┐
-│   Agents    │  AI orchestration (Port 8001)
-│  Service    │  • Segmentation Agent
-│  (FastAPI)  │  • Media Fusion Agent
-└──────┬──────┘  • NBA Agent
-       │
-       ├──────────┐
-       ▼          ▼
-┌──────────┐  ┌──────────────┐
-│  Gemini  │  │ MCP Servers  │  Data abstraction (Ports 3001-3005)
-│ 2.0 Flash│  │ • Trade      │  • Mock data (demo)
-└──────────┘  │ • Risk       │  • Production ready
-              │ • Market     │
-              │ • News       │
-              │ • Client     │
-              └──────┬───────┘
-                     │
-                     ▼
-              ┌──────────────┐
-              │  PostgreSQL  │  Agent state only
-              │  (Cloud SQL) │  • Alerts
-              └──────────────┘  • Actions
-                                • Switch probability history
-```
-
 ## Agent Data Model
 
 ![Agent Data Model](images/er.png)
