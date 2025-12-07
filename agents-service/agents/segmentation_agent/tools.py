@@ -101,7 +101,7 @@ def fetch_position_snapshot(client_id: str, data_service) -> Dict[str, float]:
             return {}
         
         # Calculate concentrations
-        total_exposure = positions['netPosition'].abs().sum()
+        total_exposure = positions['net_position'].abs().sum()
         
         if total_exposure == 0:
             return {}
@@ -109,7 +109,7 @@ def fetch_position_snapshot(client_id: str, data_service) -> Dict[str, float]:
         concentrations = {}
         for _, row in positions.iterrows():
             instrument = row['instrument']
-            concentration = abs(row['netPosition']) / total_exposure
+            concentration = abs(row['net_position']) / total_exposure
             
             # Only include significant concentrations (>5%)
             if concentration > 0.05:
