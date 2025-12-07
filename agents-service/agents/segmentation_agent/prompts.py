@@ -163,7 +163,7 @@ def build_analysis_prompt(client_id: str, trade_summary: dict, position_snapshot
     # Format position snapshot
     if position_snapshot:
         position_str = "\n".join([
-            f"- {instrument}: {concentration:.1%} concentration"
+            f"- {instrument}: {float(concentration):.1%} concentration"
             for instrument, concentration in position_snapshot.items()
         ])
     else:
