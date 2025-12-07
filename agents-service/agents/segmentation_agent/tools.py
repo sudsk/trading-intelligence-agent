@@ -19,7 +19,12 @@ def fetch_trades_summary(client_id: str, data_service) -> Dict[str, Any]:
     NOW INCLUDES: HMM/change-point switch probability calculation.
     """
     try:
-        # ... existing code to fetch trades ...
+        # Fetch trades from MCP
+        start_date = datetime.now() - timedelta(days=90)
+        trades = data_service.get_trades(
+            client_id=client_id,
+            start_date=start_date
+        )
         
         # Compute aggregated statistics (existing code)
         summary = {
