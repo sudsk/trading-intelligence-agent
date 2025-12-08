@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   trade-mcp:
     build: ./mcp-servers/trade
