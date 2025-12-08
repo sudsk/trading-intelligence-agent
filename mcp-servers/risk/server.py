@@ -63,7 +63,7 @@ class MockRiskMCPServer:
         except Exception as e:
             return {'error': str(e), 'metrics': {}}
     
-    def get_features(self, client_id: str, days: int = 90) -> Dict[str, Any]:
+    def get_client_features(self, client_id: str, days: int = 90) -> Dict[str, Any]:
         import random
         try:
             return {
@@ -88,8 +88,8 @@ async def call_tool(request: ToolRequest):
             result = server.get_client_positions(**request.arguments)
         elif request.tool_name == "get_risk_metrics":
             result = server.get_risk_metrics(**request.arguments)
-        elif request.tool_name == "get_features":
-            result = server.get_features(**request.arguments)
+        elif request.tool_name == "get_client_features":
+            result = server.get_client_features(**request.arguments)
         else:
             raise HTTPException(404, f"Tool not found: {request.tool_name}")
         return ToolResponse(result=result)
@@ -102,7 +102,7 @@ async def list_tools():
         "tools": [
             {"name": "get_client_positions", "description": "Get current positions"},
             {"name": "get_risk_metrics", "description": "Get risk metrics (VaR, leverage)"},
-            {"name": "get_features", "description": "Get calculated features"}
+            {"name": "get_client_features", "description": "Get calculated features"}
         ]
     }
 
