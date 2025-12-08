@@ -437,16 +437,17 @@ class DataService:
             conn = self._get_connection()
             cursor = conn.cursor()
             
+            # Query columns that actually exist in the table
             query = """
                 SELECT 
                     segment,
+                    period,
+                    description,
                     start_date,
-                    end_date,
-                    switch_prob,
-                    confidence
+                    end_date
                 FROM client_regimes
                 WHERE client_id = %s
-                  AND start_date > NOW() - INTERVAL '%s months'
+                  AND start_date > CURRENT_DATE - INTERVAL '%s months'
                 ORDER BY start_date DESC
             """
             
@@ -455,21 +456,18 @@ class DataService:
             
             timeline = []
             for row in rows:
-                period_start = row[1].strftime('%B %Y') if row[1] else 'Unknown'
-                period_end = row[2].strftime('%B %Y') if row[2] else 'Present'
-                
                 timeline.append({
-                    'period': f"{period_start} - {period_end}",
-                    'segment': row[0],
-                    'description': f"Switch probability: {row[3]:.0%}" if row[3] else "Active regime",
-                    'start_date': row[1].isoformat() if row[1] else None,
-                    'end_date': row[2].isoformat() if row[2] else None,
-                    'confidence': float(row[4]) if row[4] else None
+                    'segment': row[0],           # segment
+                    'period': row[1],            # period (already formatted)
+                    'description': row[2] or 'Active regime',  # description
+                    'start_date': row[3].isoformat() if row[3] else None,
+                    'end_date': row[4].isoformat() if row[4] else None
                 })
             
             cursor.close()
             conn.close()
             
+            logger.info(f"✅ Retrieved {len(timeline)} timeline events")
             return timeline
             
         except Exception as e:
