@@ -139,7 +139,7 @@ class MediaFusionAgent:
             prompt = build_media_analysis_prompt(
                 client_id=client_id,
                 exposures=exposures,
-                headlines=headlines[:20],  # Limit to 20 for token efficiency
+                headlines=headlines[:5],  # Limit to 20 for token efficiency
                 time_range=f"Last {self.lookback_hours} hours"
             )
             
