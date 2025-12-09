@@ -477,7 +477,7 @@ class DataService:
             return []
 
 
-    async def get_client_profile_from_db(self, client_id: str) -> Dict[str, Any]:
+    def get_client_profile_from_db(self, client_id: str) -> Dict[str, Any]:
         """
         Get latest cached client profile from database.
         
@@ -498,7 +498,7 @@ class DataService:
                     risk_flags,
                     computed_at
                 FROM switch_probability_history
-                WHERE client_id = $1
+                WHERE client_id = %s
                 ORDER BY computed_at DESC
                 LIMIT 1
             ),
@@ -509,7 +509,7 @@ class DataService:
                     headlines,
                     analyzed_at
                 FROM media_analysis
-                WHERE client_id = $1
+                WHERE client_id = %s
                 ORDER BY analyzed_at DESC
                 LIMIT 1
             ),
@@ -518,7 +518,7 @@ class DataService:
                     recommendations,
                     generated_at
                 FROM nba_recommendations
-                WHERE client_id = $1
+                WHERE client_id = %s
                 ORDER BY generated_at DESC
                 LIMIT 1
             )
@@ -533,11 +533,20 @@ class DataService:
             LEFT JOIN latest_recs lr ON TRUE
         """
         
-        async with self.pool.acquire() as conn:
-            row = await conn.fetchrow(query, client_id)
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Pass client_id three times for the three WHERE clauses
+            cursor.execute(query, (client_id, client_id, client_id))
+            row = cursor.fetchone()
             
             if not row:
                 return None
+            
+            # Get column names
+            columns = [desc[0] for desc in cursor.description]
+            row_dict = dict(zip(columns, row))
             
             # Get client metadata from MCP
             client_data = self.mcp_service.get_client(client_id)
@@ -545,23 +554,27 @@ class DataService:
             return {
                 "clientId": client_id,
                 "rm": client_data.get("rm", "Unknown"),
-                "segment": row["segment"],
-                "switchProb": float(row["switch_prob"]),
-                "confidence": float(row["confidence"]),
-                "drivers": row["drivers"] or [],
-                "riskFlags": row["risk_flags"] or [],
+                "segment": row_dict["segment"],
+                "switchProb": float(row_dict["switch_prob"]) if row_dict["switch_prob"] else 0.0,
+                "confidence": float(row_dict["confidence"]) if row_dict["confidence"] else 0.0,
+                "drivers": row_dict["drivers"] or [],
+                "riskFlags": row_dict["risk_flags"] or [],
                 "primaryExposure": client_data.get("primary_exposure", "N/A"),
-                "analyzed_at": row["computed_at"].isoformat(),
+                "analyzed_at": row_dict["computed_at"].isoformat() if row_dict["computed_at"] else None,
                 "media": {
-                    "pressure": row["media_pressure"] or "UNKNOWN",
-                    "sentiment": float(row["sentiment_score"] or 0),
-                    "headlines": row["headlines"] or []
+                    "pressure": row_dict["media_pressure"] or "UNKNOWN",
+                    "sentiment": float(row_dict["sentiment_score"]) if row_dict["sentiment_score"] else 0.0,
+                    "headlines": row_dict["headlines"] or []
                 },
-                "recommendations": row["recommendations"] or []
+                "recommendations": row_dict["recommendations"] or []
             }
+            
+        finally:
+            cursor.close()
+            conn.close()
     
     
-    async def store_client_profile(self, client_id: str, profile: Dict[str, Any]):
+    def store_client_profile(self, client_id: str, profile: Dict[str, Any]):
         """
         Store fresh analysis results in database.
         
@@ -574,48 +587,59 @@ class DataService:
         
         now = datetime.utcnow()
         
-        async with self.pool.acquire() as conn:
-            async with conn.transaction():
-                # Store segmentation analysis
-                await conn.execute("""
-                    INSERT INTO switch_probability_history 
-                    (client_id, segment, switch_prob, confidence, drivers, risk_flags, computed_at)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
-                """, 
-                    client_id,
-                    profile["segment"],
-                    profile["switchProb"],
-                    profile["confidence"],
-                    profile.get("drivers", []),
-                    profile.get("riskFlags", []),
-                    now
-                )
-                
-                # Store media analysis
-                if "media" in profile:
-                    await conn.execute("""
-                        INSERT INTO media_analysis
-                        (client_id, pressure, sentiment_score, headlines, analyzed_at)
-                        VALUES ($1, $2, $3, $4, $5)
-                    """,
-                        client_id,
-                        profile["media"].get("pressure"),
-                        profile["media"].get("sentiment", 0),
-                        profile["media"].get("headlines", []),
-                        now
-                    )
-                
-                # Store recommendations
-                if "recommendations" in profile:
-                    await conn.execute("""
-                        INSERT INTO nba_recommendations
-                        (client_id, recommendations, generated_at)
-                        VALUES ($1, $2, $3)
-                    """,
-                        client_id,
-                        profile.get("recommendations", []),
-                        now
-                    )
+        conn = self._get_connection()
+        cursor = conn.cursor()
         
-        # Add analyzed_at to profile for response
-        profile["analyzed_at"] = now.isoformat()
+        try:
+            # Store segmentation analysis
+            cursor.execute("""
+                INSERT INTO switch_probability_history 
+                (client_id, segment, switch_prob, confidence, drivers, risk_flags, computed_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                client_id,
+                profile["segment"],
+                profile["switchProb"],
+                profile["confidence"],
+                Json(profile.get("drivers", [])),
+                Json(profile.get("riskFlags", [])),
+                now
+            ))
+            
+            # Store media analysis if present
+            if "media" in profile:
+                cursor.execute("""
+                    INSERT INTO media_analysis
+                    (client_id, pressure, sentiment_score, headlines, analyzed_at)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    client_id,
+                    profile["media"].get("pressure"),
+                    profile["media"].get("sentiment", 0),
+                    Json(profile["media"].get("headlines", [])),
+                    now
+                ))
+            
+            # Store recommendations if present
+            if "recommendations" in profile:
+                cursor.execute("""
+                    INSERT INTO nba_recommendations
+                    (client_id, recommendations, generated_at)
+                    VALUES (%s, %s, %s)
+                """, (
+                    client_id,
+                    Json(profile.get("recommendations", [])),
+                    now
+                ))
+            
+            conn.commit()
+            
+            # Add analyzed_at to profile for response
+            profile["analyzed_at"] = now.isoformat()
+            
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            cursor.close()
+            conn.close()
