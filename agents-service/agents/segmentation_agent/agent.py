@@ -35,7 +35,7 @@ class SegmentationAgent:
         try:
             # Initialize Gemini with system instruction
             self.model = genai.GenerativeModel(
-                model_name='gemini-2.0-flash-exp',
+                model_name='gemini-2.5-flash',
                 system_instruction=SYSTEM_INSTRUCTION
             )
             
