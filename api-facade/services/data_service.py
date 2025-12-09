@@ -1,5 +1,5 @@
 """
-Data Service for API Façade - CLEANED VERSION
+Data Service for API Façade
 
 This service handles AGENT STATE only (PostgreSQL):
 - alerts (for insights feed)
