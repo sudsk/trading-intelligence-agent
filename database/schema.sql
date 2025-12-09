@@ -60,6 +60,30 @@ CREATE TABLE client_regimes (
 );
 CREATE INDEX idx_client_regimes_client ON client_regimes(client_id, start_date DESC);
 
+-- Media analysis results
+CREATE TABLE IF NOT EXISTS media_analysis (
+    id SERIAL PRIMARY KEY,
+    client_id VARCHAR(50) NOT NULL,
+    pressure VARCHAR(20),
+    sentiment_score DECIMAL(3,2),
+    headlines JSONB,
+    analyzed_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id)
+);
+
+CREATE INDEX idx_media_client_time ON media_analysis(client_id, analyzed_at DESC);
+
+-- NBA recommendations
+CREATE TABLE IF NOT EXISTS nba_recommendations (
+    id SERIAL PRIMARY KEY,
+    client_id VARCHAR(50) NOT NULL,
+    recommendations JSONB,
+    generated_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id)
+);
+
+CREATE INDEX idx_recs_client_time ON nba_recommendations(client_id, generated_at DESC);
+
 -- Sample switch probability data for 20 demo clients
 INSERT INTO switch_probability_history (client_id, switch_prob, confidence, segment, drivers, risk_flags, computed_at)
 VALUES 
