@@ -63,13 +63,13 @@ Your role is to analyze client trading patterns and classify them into one of fo
 5. **Identify Key Drivers**
    - Select top 3 most significant factors explaining the classification
    - Be specific and quantitative when possible
+   - Keep each driver under 60 characters
    - Frame in professional trading language
 
 6. **Flag Risks**
-   - Concentration > 60% in single instrument
-   - Unusually high leverage
-   - Erratic behavior suggesting strategy drift
-   - Pattern instability
+   - Use short, standardized risk flag names
+   - Only flag significant risks (0-5 flags maximum)
+   - Common risks: concentration, leverage, volatility, drift
 
 ## Output Requirements
 
@@ -86,8 +86,8 @@ You MUST respond with ONLY valid JSON in this exact format:
     "Low flip frequency (3/month)"
   ],
   "risk_flags": [
-    "EUR concentration 72%",
-    "Volatility spike last 14d"
+    "EUR concentration",
+    "volatility spike"
   ],
   "reasoning": "Classic trend-following with consistent momentum positioning. Recent volatility uptick suggests potential uncertainty."
 }
@@ -98,9 +98,33 @@ You MUST respond with ONLY valid JSON in this exact format:
 1. **segment** must be EXACTLY one of: "Trend Follower", "Mean Reverter", "Hedger", "Trend Setter"
 2. **confidence** must be 0.0-1.0 (how confident in the classification)
 3. **switch_prob** must be 0.15-0.85 (probability of strategy switching in 14 days)
-4. **drivers** must be array of 2-3 strings, specific and quantitative, under 60 characters each
-5. **risk_flags** must be array of 0-5 strings, only significant risks
-6. **reasoning** should explain the classification and switch probability assessment
+4. **drivers** must be array of 2-3 strings, under 60 characters each
+5. **risk_flags** must be array of 0-5 short strings (examples below)
+6. **reasoning** should be 1-2 sentences explaining classification and switch probability
+
+## Standard Risk Flags (use these exact phrases)
+
+**Concentration Risks:**
+- "EUR concentration" - >60% exposure to EUR pairs
+- "single instrument concentration" - >60% in one instrument
+- "sector concentration" - overweight in specific sector
+
+**Volatility Risks:**
+- "volatility spike" - recent sharp increase in position volatility
+- "holding period volatility" - inconsistent hold times
+
+**Strategy Risks:**
+- "strategy drift" - evidence of strategy change
+- "pattern deviation" - breaking from historical patterns
+- "flip acceleration" - increasing position reversal frequency
+
+**Leverage Risks:**
+- "high leverage" - excessive leverage usage
+- "leverage drift" - changing leverage patterns
+
+**Behavioral Risks:**
+- "erratic behavior" - inconsistent trading patterns
+- "turnover spike" - sudden increase in trading frequency
 
 ## Examples
 
@@ -116,7 +140,7 @@ Output: segment="Mean Reverter", confidence=0.72, switch_prob=0.61 (drift detect
 Input: 45-day avg holding, balanced positions, low turnover
 Output: segment="Hedger", confidence=0.85, switch_prob=0.22
 
-Remember: You are analyzing professional trading behavior. Be precise, quantitative, and actionable.
+Remember: You are analyzing professional trading behavior. Be precise, quantitative, and actionable. Keep all text concise.
 """
 
 ANALYSIS_PROMPT_TEMPLATE = """Analyze the trading behavior for client {client_id}.
@@ -144,7 +168,7 @@ Based on this data, classify the client into one of the four segments and assess
 You may reference the computed switch probability in your reasoning, but also consider qualitative factors.
 Your confidence score should reflect how well the quantitative data aligns with the segment classification.
 
-Respond with ONLY the JSON output as specified in your instructions.
+Respond with ONLY the JSON output as specified in your instructions. No markdown, no code blocks, just the JSON.
 """
 
 
@@ -207,12 +231,12 @@ Output:
   "confidence": 0.92,
   "switch_prob": 0.28,
   "drivers": [
-    "Very high trade frequency (5 trades/day) with momentum alignment",
-    "Ultra-short 2.8-day holding period indicates active trend capture",
-    "85% market order usage shows aggressive momentum-chasing behavior"
+    "High trade frequency (5/day) with momentum alignment",
+    "Ultra-short 2.8d holding shows active trend capture",
+    "85% market orders indicate aggressive positioning"
   ],
   "risk_flags": [
-    "High turnover may lead to excessive transaction costs"
+    "turnover spike"
   ],
   "reasoning": "Classic high-frequency trend following with strong consistency. Low flip frequency and stable pattern indicate low switch risk."
 }
@@ -234,15 +258,15 @@ Output:
   "confidence": 0.65,
   "switch_prob": 0.68,
   "drivers": [
-    "High flip frequency (18/month) indicates reversal-seeking behavior",
-    "Moderate 6.5-day holding consistent with range-bound strategies",
-    "Mixed order types suggest flexible approach to entry/exit"
+    "High flip frequency (18/month) shows reversal-seeking",
+    "Moderate 6.5d holding fits range-bound strategy",
+    "Mixed order types suggest flexible execution"
   ],
   "risk_flags": [
-    "Recent pattern change - flip frequency dropping, holds extending",
-    "Strategy appears to be drifting toward trend following"
+    "strategy drift",
+    "pattern deviation"
   ],
-  "reasoning": "Client historically operated as mean reverter but recent changes in behavior (fewer flips, longer holds) suggest potential strategy shift. Elevated switch probability warranted."
+  "reasoning": "Client historically operated as mean reverter but recent behavior changes suggest potential strategy shift. Elevated switch probability warranted."
 }
 ```
 
@@ -262,12 +286,69 @@ Output:
   "confidence": 0.89,
   "switch_prob": 0.19,
   "drivers": [
-    "Very long 52-day holding period reflects defensive mindset",
-    "Low trade frequency (0.5/day) and minimal flips show conviction",
-    "Options usage indicates structured hedging approach"
+    "Very long 52d holding reflects defensive mindset",
+    "Low frequency (0.5/day) and minimal flips show conviction",
+    "Options usage indicates structured hedging"
   ],
   "risk_flags": [],
   "reasoning": "Textbook hedging behavior with extreme consistency. Very low switch probability due to stable, predictable patterns."
+}
+```
+
+**Example 4: Trend Setter with Concentration Risk**
+Input:
+- 220 trades in 90 days
+- Primarily EURUSD
+- 4.5 day average holding
+- 5 position flips in 30 days
+- 68% market orders
+- Recent pattern: "Early positioning ahead of events"
+
+Output:
+```json
+{
+  "segment": "Trend Setter",
+  "confidence": 0.78,
+  "switch_prob": 0.42,
+  "drivers": [
+    "Positive lead-lag correlation (0.71) vs market",
+    "Early entries ahead of major moves",
+    "Moderate 4.5d holding shows conviction"
+  ],
+  "risk_flags": [
+    "EUR concentration",
+    "single instrument concentration"
+  ],
+  "reasoning": "Demonstrates anticipatory positioning with solid alpha generation. EUR concentration creates single-point risk requiring monitoring."
+}
+```
+
+**Example 5: Erratic Trader Switching Strategies**
+Input:
+- 320 trades in 90 days
+- Multiple instruments
+- 8.2 day average holding (was 3.5d last month)
+- 22 position flips in 30 days (was 8/month previously)
+- 52% market orders
+- Recent pattern: "Highly inconsistent, rapid changes"
+
+Output:
+```json
+{
+  "segment": "Mean Reverter",
+  "confidence": 0.58,
+  "switch_prob": 0.79,
+  "drivers": [
+    "Very high flip frequency (22/month) suggests reversals",
+    "Holding period doubling from 3.5d to 8.2d",
+    "Mixed order usage indicates strategy uncertainty"
+  ],
+  "risk_flags": [
+    "erratic behavior",
+    "strategy drift",
+    "holding period volatility"
+  ],
+  "reasoning": "Current behavior suggests mean reversion but dramatic pattern changes indicate high probability of strategy switch. Confidence moderate due to inconsistency."
 }
 ```
 """
