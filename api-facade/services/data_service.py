@@ -449,7 +449,7 @@ class DataService:
                     end_date
                 FROM client_regimes
                 WHERE client_id = %s
-                  AND start_date > CURRENT_DATE - INTERVAL '{months} months'
+                  ---AND start_date > CURRENT_DATE - INTERVAL '{months} months'
                 ORDER BY start_date DESC
             """
             
