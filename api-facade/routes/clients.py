@@ -92,49 +92,107 @@ async def list_clients(
             detail=f"Failed to retrieve clients: {str(e)}"
         )
 
-
 @router.get("/{client_id}/profile")
 async def get_client_profile(
     client_id: str,
-    agent_client: AgentClient = Depends()
+    data_service: DataService = Depends()
 ):
     """
-    Get complete client profile (main endpoint).
+    Get client profile from database (INSTANT - returns cached results).
     
-    This calls the agents-service orchestrator which:
-    1. Runs segmentation analysis
-    2. Analyzes media sentiment
-    3. Adjusts switch probability
-    4. Generates recommendations
+    Returns the most recent pre-computed analysis from the database without
+    triggering any agent analysis. Shows "analyzed_at" timestamp so users
+    know data freshness.
     
     Args:
         client_id: Client identifier
         
     Returns:
-        Complete client profile with all analysis
+        Cached client profile with last analysis timestamp
     """
-    logger.info(f" Getting profile for: {client_id}")
+    logger.info(f"📊 Getting cached profile for: {client_id}")
     
     try:
-        # Call agents-service (orchestrator endpoint)
-        profile = await agent_client.get_client_profile(client_id)
+        # Get latest analysis from database (fast query)
+        profile = await data_service.get_client_profile_from_db(client_id)
+        
+        if not profile:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No profile found for client {client_id}. Try refreshing to trigger analysis."
+            )
         
         logger.info(
-            f" Profile retrieved: {client_id} "
+            f"✅ Cached profile retrieved: {client_id} "
             f"(segment={profile.get('segment')}, "
-            f"switchProb={profile.get('switchProb')})"
+            f"switchProb={profile.get('switchProb')}, "
+            f"analyzed_at={profile.get('analyzed_at')})"
         )
         
         return JSONResponse(content=profile)
         
     except HTTPException:
-        # Re-raise HTTP exceptions from agent_client
         raise
     except Exception as e:
-        logger.error(f" Error getting profile for {client_id}: {e}", exc_info=True)
+        logger.error(f"❌ Error getting profile for {client_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve profile: {str(e)}"
+        )
+
+
+@router.post("/{client_id}/analyze")
+async def trigger_client_analysis(
+    client_id: str,
+    agent_client: AgentClient = Depends(),
+    data_service: DataService = Depends()
+):
+    """
+    Trigger fresh agent analysis for client (SLOW - runs all agents).
+    
+    This calls the agents-service orchestrator which:
+    1. Runs segmentation analysis (~3s)
+    2. Analyzes media sentiment (~11s)
+    3. Generates recommendations (~6s)
+    4. Stores results in database
+    
+    Total time: ~20 seconds
+    
+    Args:
+        client_id: Client identifier
+        
+    Returns:
+        Success status with analysis timestamp
+    """
+    logger.info(f"🔄 Triggering fresh analysis for: {client_id}")
+    
+    try:
+        # Call agents-service orchestrator (this takes ~20s)
+        profile = await agent_client.get_client_profile(client_id)
+        
+        # Store results in database with current timestamp
+        await data_service.store_client_profile(client_id, profile)
+        
+        logger.info(
+            f"✅ Analysis complete for {client_id} "
+            f"(segment={profile.get('segment')}, "
+            f"switchProb={profile.get('switchProb')})"
+        )
+        
+        return JSONResponse(content={
+            "status": "success",
+            "client_id": client_id,
+            "analyzed_at": profile.get('analyzed_at'),
+            "message": "Analysis completed successfully"
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error analyzing {client_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to analyze client: {str(e)}"
         )
 
 
