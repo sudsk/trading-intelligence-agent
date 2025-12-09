@@ -87,104 +87,104 @@ INSERT INTO switch_probability_history (client_id, switch_prob, confidence, segm
 VALUES 
   -- High switch probability (0.60-0.85) - Need attention
   ('ACME_FX_023', 0.720, 0.850, 'Trend Follower', 
-   '{"pattern_break": 0.22, "changepoint": 0.20, "momentum_flip": 0.15, "regime_flip": 0.10, "drift": 0.05}',
+   '["High momentum-beta (0.85) with strong directional bias", "Shortened holding times from 5d to 2.8d average", "Recent pattern break detected in EURUSD positioning"]',
    '["sustained_deviation", "volatility_spike"]',
    NOW() - INTERVAL '5 minutes'),
    
   ('ATLAS_BOND_012', 0.680, 0.820, 'Trend Setter',
-   '{"pattern_break": 0.20, "changepoint": 0.18, "momentum_flip": 0.15, "regime_flip": 0.10, "drift": 0.05}',
+   '["Early positioning ahead of rate moves shows alpha", "Positive lead-lag correlation (0.72) vs market", "Duration concentration in 5-7yr sector creating risk"]',
    '["sustained_deviation"]',
    NOW() - INTERVAL '2 minutes'),
    
   ('NOVA_MACRO_045', 0.760, 0.880, 'Mean Reverter',
-   '{"pattern_break": 0.25, "changepoint": 0.22, "momentum_flip": 0.15, "regime_flip": 0.09, "drift": 0.05}',
+   '["Frequent position flips (18/month) indicate reversal-seeking", "Counter-trend positioning in 78% of recent trades", "Recent changepoint detected - drift toward momentum trades"]',
    '["sustained_deviation", "volatility_spike", "position_concentration"]',
    NOW() - INTERVAL '8 minutes'),
    
   ('PHOENIX_CAPITAL_031', 0.810, 0.900, 'Trend Follower',
-   '{"pattern_break": 0.28, "changepoint": 0.23, "momentum_flip": 0.18, "regime_flip": 0.08, "drift": 0.04}',
+   '["Very high momentum alignment (0.89 beta) with market moves", "Ultra-short 2.3-day holding period suggests active trading", "Sharp increase in position volatility last 14 days"]',
    '["sustained_deviation", "volatility_spike", "position_concentration"]',
    NOW() - INTERVAL '12 minutes'),
    
   ('SENTINEL_ASSETS_067', 0.650, 0.800, 'Hedger',
-   '{"pattern_break": 0.18, "changepoint": 0.20, "momentum_flip": 0.14, "regime_flip": 0.08, "drift": 0.05}',
+   '["Long 42-day average holding reflects defensive mindset", "Balanced exposure maintenance with 35% hedge ratio", "Recent concentration increase in single-name positions"]',
    '["sustained_deviation", "position_concentration"]',
    NOW() - INTERVAL '6 minutes'),
   
   -- Medium switch probability (0.35-0.59) - Monitor
   ('ZEUS_COMM_019', 0.480, 0.720, 'Mean Reverter',
-   '{"pattern_break": 0.12, "changepoint": 0.15, "momentum_flip": 0.10, "regime_flip": 0.07, "drift": 0.04}',
+   '["Moderate flip frequency (8/month) shows reversal strategy", "6.5-day holding period aligns with range-bound approach", "Mixed order types suggest flexible entry/exit strategy"]',
    '[]',
    NOW() - INTERVAL '3 minutes'),
    
   ('TITAN_EQ_008', 0.420, 0.680, 'Hedger',
-   '{"pattern_break": 0.10, "changepoint": 0.12, "momentum_flip": 0.10, "regime_flip": 0.06, "drift": 0.04}',
+   '["Consistent 38-day holding period shows conviction", "Low turnover (0.6 trades/day) reflects defensive approach", "Options usage indicates structured hedging strategy"]',
    '[]',
    NOW() - INTERVAL '7 minutes'),
    
   ('MERIDIAN_FUND_052', 0.520, 0.750, 'Trend Setter',
-   '{"pattern_break": 0.15, "changepoint": 0.14, "momentum_flip": 0.12, "regime_flip": 0.07, "drift": 0.04}',
+   '["Anticipatory positioning with 0.68 lead-lag correlation", "Recent transition from trend-following to leading behavior", "Increased market order usage (72%) shows conviction"]',
    '["sustained_deviation"]',
    NOW() - INTERVAL '15 minutes'),
    
   ('APEX_TRADING_089', 0.460, 0.700, 'Trend Follower',
-   '{"pattern_break": 0.12, "changepoint": 0.13, "momentum_flip": 0.11, "regime_flip": 0.06, "drift": 0.04}',
+   '["High trade frequency (4.2/day) with momentum alignment", "Short 3.1-day holding indicates active trend capture", "Consistent directional bias (82% momentum-aligned)"]',
    '[]',
    NOW() - INTERVAL '10 minutes'),
    
   ('OLYMPUS_VENTURES_024', 0.390, 0.650, 'Mean Reverter',
-   '{"pattern_break": 0.09, "changepoint": 0.11, "momentum_flip": 0.09, "regime_flip": 0.06, "drift": 0.04}',
+   '["Counter-trend positioning in 68% of trades", "Moderate 7.2-day holding suits reversal strategy", "Recent reduction in flip frequency suggests stabilization"]',
    '[]',
    NOW() - INTERVAL '18 minutes'),
    
   ('QUANTUM_FINANCE_015', 0.540, 0.770, 'Hedger',
-   '{"pattern_break": 0.14, "changepoint": 0.15, "momentum_flip": 0.12, "regime_flip": 0.08, "drift": 0.05}',
+   '["Long-term 45-day average holding shows defensive focus", "Balanced position maintenance across currency pairs", "Recent uptick in position concentration needs monitoring"]',
    '["sustained_deviation"]',
    NOW() - INTERVAL '9 minutes'),
    
   ('VANGUARD_MARKETS_078', 0.440, 0.690, 'Trend Setter',
-   '{"pattern_break": 0.11, "changepoint": 0.12, "momentum_flip": 0.11, "regime_flip": 0.06, "drift": 0.04}',
+   '["Early market-making positioning shows anticipatory behavior", "Mild positive lead-lag (0.58) vs benchmark", "Consistent bid-ask management with directional overlay"]',
    '[]',
    NOW() - INTERVAL '20 minutes'),
   
   -- Low switch probability (0.15-0.34) - Stable
   ('CORNERSTONE_INV_033', 0.280, 0.620, 'Trend Follower',
-   '{"pattern_break": 0.06, "changepoint": 0.08, "momentum_flip": 0.07, "regime_flip": 0.04, "drift": 0.03}',
+   '["Stable momentum-beta (0.76) over 90-day period", "Consistent 4.5-day holding pattern", "Low position flip frequency (2/month) shows conviction"]',
    '[]',
    NOW() - INTERVAL '4 minutes'),
    
   ('HORIZON_GLOBAL_056', 0.310, 0.640, 'Mean Reverter',
-   '{"pattern_break": 0.08, "changepoint": 0.09, "momentum_flip": 0.07, "regime_flip": 0.04, "drift": 0.03}',
+   '["Disciplined counter-trend approach with 8.5-day holds", "Consistent reversal identification across markets", "Stable flip frequency (9/month) shows systematic strategy"]',
    '[]',
    NOW() - INTERVAL '11 minutes'),
    
   ('STERLING_FX_041', 0.240, 0.590, 'Hedger',
-   '{"pattern_break": 0.05, "changepoint": 0.07, "momentum_flip": 0.06, "regime_flip": 0.04, "drift": 0.02}',
+   '["Very long 52-day holding period reflects conviction", "Extremely low turnover (0.3 trades/day)", "Consistent hedging approach with minimal drift"]',
    '[]',
    NOW() - INTERVAL '14 minutes'),
    
   ('ECLIPSE_PARTNERS_092', 0.190, 0.550, 'Trend Setter',
-   '{"pattern_break": 0.04, "changepoint": 0.05, "momentum_flip": 0.05, "regime_flip": 0.03, "drift": 0.02}',
+   '["Strong early-positioning alpha (0.82 lead-lag)", "Systematic approach with consistent entry signals", "High conviction shown by 15% market order usage"]',
    '[]',
    NOW() - INTERVAL '22 minutes'),
    
   ('PINNACLE_WEALTH_064', 0.330, 0.660, 'Trend Follower',
-   '{"pattern_break": 0.08, "changepoint": 0.09, "momentum_flip": 0.08, "regime_flip": 0.05, "drift": 0.03}',
+   '["Moderate momentum alignment (0.71 beta)", "Stable 5.2-day average holding period", "Consistent directional bias with low volatility"]',
    '[]',
    NOW() - INTERVAL '16 minutes'),
    
   ('NEXUS_CAPITAL_017', 0.270, 0.610, 'Mean Reverter',
-   '{"pattern_break": 0.06, "changepoint": 0.08, "momentum_flip": 0.07, "regime_flip": 0.04, "drift": 0.02}',
+   '["Patient reversal strategy with 9.8-day holds", "Consistent counter-positioning across market regimes", "Stable behavior pattern over 90-day observation"]',
    '[]',
    NOW() - INTERVAL '13 minutes'),
    
   ('ROCKFORD_TRUST_088', 0.220, 0.580, 'Hedger',
-   '{"pattern_break": 0.05, "changepoint": 0.06, "momentum_flip": 0.06, "regime_flip": 0.03, "drift": 0.02}',
+   '["Ultra-long 68-day average holding shows conviction", "Minimal trading activity (0.2 trades/day)", "Rock-solid hedging approach with zero drift"]',
    '[]',
    NOW() - INTERVAL '19 minutes'),
    
   ('SUMMIT_ADVISORS_051', 0.290, 0.630, 'Trend Setter',
-   '{"pattern_break": 0.07, "changepoint": 0.08, "momentum_flip": 0.07, "regime_flip": 0.04, "drift": 0.03}',
+   '["Consistent anticipatory positioning (0.65 lead-lag)", "Stable early-entry patterns across market cycles", "Disciplined approach with minimal strategy drift"]',
    '[]',
    NOW() - INTERVAL '17 minutes')
 ON CONFLICT DO NOTHING;
