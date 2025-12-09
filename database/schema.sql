@@ -67,8 +67,7 @@ CREATE TABLE IF NOT EXISTS media_analysis (
     pressure VARCHAR(20),
     sentiment_score DECIMAL(3,2),
     headlines JSONB,
-    analyzed_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(client_id)
+    analyzed_at TIMESTAMP NOT NULL
 );
 
 CREATE INDEX idx_media_client_time ON media_analysis(client_id, analyzed_at DESC);
@@ -78,8 +77,7 @@ CREATE TABLE IF NOT EXISTS nba_recommendations (
     id SERIAL PRIMARY KEY,
     client_id VARCHAR(50) NOT NULL,
     recommendations JSONB,
-    generated_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(client_id)
+    generated_at TIMESTAMP NOT NULL
 );
 
 CREATE INDEX idx_recs_client_time ON nba_recommendations(client_id, generated_at DESC);
