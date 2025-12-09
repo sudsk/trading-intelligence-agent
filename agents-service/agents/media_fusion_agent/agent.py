@@ -35,7 +35,7 @@ class MediaFusionAgent:
         try:
             # Initialize Gemini
             self.model = genai.GenerativeModel(
-                model_name='gemini-2.5-flash-lite',
+                model_name='gemini-2.5-flash',
                 system_instruction=SYSTEM_INSTRUCTION
             )
             
