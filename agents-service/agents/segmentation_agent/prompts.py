@@ -81,15 +81,15 @@ You MUST respond with ONLY valid JSON in this exact format:
   "confidence": 0.82,
   "switch_prob": 0.53,
   "drivers": [
-    "Strong momentum alignment - 85% of trades follow market direction",
-    "Short average holding period of 3.2 days indicates active trend capture",
-    "Low position flip frequency suggests directional conviction"
+    "High momentum alignment (85% directional)",
+    "Short 3.2-day holding period",
+    "Low flip frequency (3/month)"
   ],
   "risk_flags": [
-    "EUR concentration at 72% creates single-exposure risk",
-    "Increased position volatility in last 14 days"
+    "EUR concentration 72%",
+    "Volatility spike last 14d"
   ],
-  "reasoning": "Client demonstrates classic trend-following behavior with consistent momentum-aligned positioning. However, recent uptick in position volatility and two contrarian trades suggest potential strategy uncertainty, elevating switch probability to 0.53 from typical 0.35 baseline."
+  "reasoning": "Classic trend-following with consistent momentum positioning. Recent volatility uptick suggests potential uncertainty."
 }
 ```
 
@@ -98,7 +98,7 @@ You MUST respond with ONLY valid JSON in this exact format:
 1. **segment** must be EXACTLY one of: "Trend Follower", "Mean Reverter", "Hedger", "Trend Setter"
 2. **confidence** must be 0.0-1.0 (how confident in the classification)
 3. **switch_prob** must be 0.15-0.85 (probability of strategy switching in 14 days)
-4. **drivers** must be array of 2-3 strings, specific and quantitative
+4. **drivers** must be array of 2-3 strings, specific and quantitative, under 60 characters each
 5. **risk_flags** must be array of 0-5 strings, only significant risks
 6. **reasoning** should explain the classification and switch probability assessment
 
