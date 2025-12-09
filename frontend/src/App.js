@@ -79,7 +79,7 @@ function App() {
         clientsAPI.getProfile(clientId),
         clientsAPI.getTimeline(clientId),
         clientsAPI.getInsights(clientId),
-        clientsAPI.getMedia(clientId),
+        //clientsAPI.getMedia(clientId),
       ]);
 
       const fullProfile = {
