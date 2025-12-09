@@ -17,6 +17,7 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState(null);
+  const [profileCache, setProfileCache] = useState({}); // ← ADD THIS
 
   // SSE for real-time alerts
   const { data: sseData } = useSSE(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/alerts/stream`);
@@ -34,6 +35,12 @@ function App() {
           ? { ...c, switchProb: sseData.newSwitchProb }
           : c
       ));
+      // Clear cache for this client to force refresh on next view
+      setProfileCache(prev => {
+        const updated = { ...prev };
+        delete updated[sseData.clientId];
+        return updated;
+      });      
     }
   }, [sseData]);
 
@@ -52,6 +59,20 @@ function App() {
   };
 
   const selectClient = async (clientId) => {
+    // ← ADD: Prevent duplicate calls
+    if (loading) {
+      console.log('Already loading, skipping...');
+      return;
+    }
+    
+    // ← ADD: Check cache first
+    if (profileCache[clientId]) {
+      console.log('Using cached profile for', clientId);
+      setSelectedClient(clientId);
+      setProfile(profileCache[clientId]);
+      return;
+    }
+    
     setLoading(true);
     try {
       const [profileRes, timelineRes, insightsRes, mediaRes] = await Promise.all([
@@ -61,13 +82,22 @@ function App() {
         clientsAPI.getMedia(clientId),
       ]);
 
-      setSelectedClient(clientId);
-      setProfile({
+      const fullProfile = {
         ...profileRes.data,
         timeline: timelineRes.data,
         insights: insightsRes.data,
         media: mediaRes.data,
-      });
+      };
+      
+      setSelectedClient(clientId);
+      setProfile(fullProfile);
+
+      // ← ADD: Store in cache
+      setProfileCache(prev => ({
+        ...prev,
+        [clientId]: fullProfile
+      }));
+      
     } catch (error) {
       console.error('Error loading profile:', error);
     } finally {
@@ -75,6 +105,21 @@ function App() {
     }
   };
 
+  // ← ADD: Manual refresh function
+  const refreshProfile = async () => {
+    if (!selectedClient || loading) return;
+    
+    // Clear cache for this client
+    setProfileCache(prev => {
+      const updated = { ...prev };
+      delete updated[selectedClient];
+      return updated;
+    });
+    
+    // Reload
+    await selectClient(selectedClient);
+  };
+  
   return (
     <div className="app">
       <Header onForceEvent={() => {/* trigger demo event */}} />
