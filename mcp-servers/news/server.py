@@ -41,7 +41,11 @@ class MockNewsMCPServer:
     
     def get_headlines(self, instruments: List[str], hours: int = 72) -> Dict[str, Any]:
         try:
-            cutoff = datetime.now() - timedelta(hours=hours)
+            # For demo: use latest headline timestamp as "now"
+            latest_timestamp = self.headlines_df['timestamp'].max()  
+            cutoff = latest_timestamp - timedelta(hours=hours)
+            # cutoff = datetime.now() - timedelta(hours=hours)
+            
             headlines = self.headlines_df[
                 (self.headlines_df['instrument'].isin(instruments)) &
                 (self.headlines_df['timestamp'] >= cutoff)
