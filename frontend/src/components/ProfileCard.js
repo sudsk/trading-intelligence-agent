@@ -1,18 +1,63 @@
 import React from 'react';
 
-const ProfileCard = ({ profile }) => {
+const ProfileCard = ({ profile, onRefresh }) => {  // ← Add onRefresh prop
   if (!profile) return null;
-
+  
+  // Format the timestamp
+  const formatTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Unknown';
+    const now = new Date();
+    const analyzed = new Date(timestamp);
+    const diffMs = now - analyzed;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+  };
+  
   return (
     <div className="card">
       <div className="card-header">
         <div>
           <div className="card-title">{profile.clientId}</div>
           <div className="card-subtitle">Relationship Manager: {profile.rm}</div>
+          {/* ← Add Last Analyzed timestamp */}
+          {profile.analyzed_at && (
+            <div className="card-subtitle" style={{ fontSize: '0.85em', color: 'var(--uui-neutral-50)' }}>
+              Last analyzed: {formatTimeAgo(profile.analyzed_at)}
+            </div>
+          )}
         </div>
-        <div className="badge">{Math.round(profile.confidence * 100)}% Confidence</div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className="badge">{Math.round(profile.confidence * 100)}% Confidence</div>
+          {/* ← Add Refresh button */}
+          {onRefresh && (
+            <button 
+              onClick={onRefresh}
+              className="refresh-button"
+              title="Refresh analysis"
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--uui-neutral-30)',
+                borderRadius: '4px',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              🔄 Refresh
+            </button>
+          )}
+        </div>
       </div>
-
+      
       <div className="metrics-grid">
         <div className="metric">
           <div className="metric-label">Strategy Segment</div>
@@ -35,7 +80,7 @@ const ProfileCard = ({ profile }) => {
           </div>
         </div>
       </div>
-
+      
       <div>
         <div className="section-title">Key Drivers</div>
         <div className="chips">
