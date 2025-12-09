@@ -475,3 +475,147 @@ class DataService:
         except Exception as e:
             logger.error(f"❌ Error fetching timeline: {e}")
             return []
+
+
+    async def get_client_profile_from_db(self, client_id: str) -> Dict[str, Any]:
+        """
+        Get latest cached client profile from database.
+        
+        Returns pre-computed analysis results including:
+        - segment, switchProb, confidence from switch_probability_history
+        - media data from latest media analysis
+        - recommendations from nba_recommendations
+        - analyzed_at timestamp (computed_at field)
+        """
+        query = """
+            WITH latest_analysis AS (
+                SELECT 
+                    client_id,
+                    segment,
+                    switch_prob,
+                    confidence,
+                    drivers,
+                    risk_flags,
+                    computed_at
+                FROM switch_probability_history
+                WHERE client_id = $1
+                ORDER BY computed_at DESC
+                LIMIT 1
+            ),
+            latest_media AS (
+                SELECT 
+                    pressure,
+                    sentiment_score,
+                    headlines,
+                    analyzed_at
+                FROM media_analysis
+                WHERE client_id = $1
+                ORDER BY analyzed_at DESC
+                LIMIT 1
+            ),
+            latest_recs AS (
+                SELECT 
+                    recommendations,
+                    generated_at
+                FROM nba_recommendations
+                WHERE client_id = $1
+                ORDER BY generated_at DESC
+                LIMIT 1
+            )
+            SELECT 
+                la.*,
+                lm.pressure as media_pressure,
+                lm.sentiment_score,
+                lm.headlines,
+                lr.recommendations
+            FROM latest_analysis la
+            LEFT JOIN latest_media lm ON TRUE
+            LEFT JOIN latest_recs lr ON TRUE
+        """
+        
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(query, client_id)
+            
+            if not row:
+                return None
+            
+            # Get client metadata from MCP
+            client_data = self.mcp_service.get_client(client_id)
+            
+            return {
+                "clientId": client_id,
+                "rm": client_data.get("rm", "Unknown"),
+                "segment": row["segment"],
+                "switchProb": float(row["switch_prob"]),
+                "confidence": float(row["confidence"]),
+                "drivers": row["drivers"] or [],
+                "riskFlags": row["risk_flags"] or [],
+                "primaryExposure": client_data.get("primary_exposure", "N/A"),
+                "analyzed_at": row["computed_at"].isoformat(),
+                "media": {
+                    "pressure": row["media_pressure"] or "UNKNOWN",
+                    "sentiment": float(row["sentiment_score"] or 0),
+                    "headlines": row["headlines"] or []
+                },
+                "recommendations": row["recommendations"] or []
+            }
+    
+    
+    async def store_client_profile(self, client_id: str, profile: Dict[str, Any]):
+        """
+        Store fresh analysis results in database.
+        
+        Updates:
+        - switch_probability_history
+        - media_analysis
+        - nba_recommendations
+        """
+        from datetime import datetime
+        
+        now = datetime.utcnow()
+        
+        async with self.pool.acquire() as conn:
+            async with conn.transaction():
+                # Store segmentation analysis
+                await conn.execute("""
+                    INSERT INTO switch_probability_history 
+                    (client_id, segment, switch_prob, confidence, drivers, risk_flags, computed_at)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                """, 
+                    client_id,
+                    profile["segment"],
+                    profile["switchProb"],
+                    profile["confidence"],
+                    profile.get("drivers", []),
+                    profile.get("riskFlags", []),
+                    now
+                )
+                
+                # Store media analysis
+                if "media" in profile:
+                    await conn.execute("""
+                        INSERT INTO media_analysis
+                        (client_id, pressure, sentiment_score, headlines, analyzed_at)
+                        VALUES ($1, $2, $3, $4, $5)
+                    """,
+                        client_id,
+                        profile["media"].get("pressure"),
+                        profile["media"].get("sentiment", 0),
+                        profile["media"].get("headlines", []),
+                        now
+                    )
+                
+                # Store recommendations
+                if "recommendations" in profile:
+                    await conn.execute("""
+                        INSERT INTO nba_recommendations
+                        (client_id, recommendations, generated_at)
+                        VALUES ($1, $2, $3)
+                    """,
+                        client_id,
+                        profile.get("recommendations", []),
+                        now
+                    )
+        
+        # Add analyzed_at to profile for response
+        profile["analyzed_at"] = now.isoformat()
