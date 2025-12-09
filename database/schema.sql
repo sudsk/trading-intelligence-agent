@@ -300,3 +300,210 @@ INSERT INTO alerts (client_id, alert_type, severity, old_switch_prob, new_switch
   ('OLYMPUS_VENTURES_024', 'OUTCOME', 'LOW', 0.420, 0.390, 'Quarterly review completed - client satisfied with performance', TRUE, NOW() - INTERVAL '7 days'),
   ('APEX_TRADING_089', 'OUTCOME', 'MEDIUM', 0.500, 0.460, 'Hedging strategy implemented - reduced exposure risk', TRUE, NOW() - INTERVAL '7 days')
 ON CONFLICT DO NOTHING;
+
+INSERT INTO media_analysis (client_id, pressure, sentiment_score, headlines, analyzed_at) VALUES
+
+-- High switch probability clients (HIGH media pressure)
+('ACME_FX_023', 'HIGH', -0.45, 
+ '[
+   {"title": "Euro Faces Pressure Amid ECB Policy Uncertainty", "sentiment": "negative", "timestamp": "2025-12-09T14:30:00Z", "source": "Reuters"},
+   {"title": "Technology Sector Volatility Impacts FX Markets", "sentiment": "negative", "timestamp": "2025-12-09T13:15:00Z", "source": "Bloomberg"},
+   {"title": "Dollar Strength Continues as Fed Signals Hawkish Stance", "sentiment": "negative", "timestamp": "2025-12-09T11:45:00Z", "source": "Financial Times"},
+   {"title": "Risk-Off Sentiment Dominates European Trading Session", "sentiment": "negative", "timestamp": "2025-12-09T10:20:00Z", "source": "WSJ"},
+   {"title": "Tech Earnings Concerns Drive FX Volatility Higher", "sentiment": "negative", "timestamp": "2025-12-09T09:00:00Z", "source": "CNBC"}
+ ]'::jsonb,
+ NOW() - INTERVAL '5 minutes'),
+
+('ATLAS_BOND_012', 'HIGH', -0.38,
+ '[
+   {"title": "Bond Market Selloff Accelerates on Rate Fears", "sentiment": "negative", "timestamp": "2025-12-09T14:45:00Z", "source": "Bloomberg"},
+   {"title": "European Yields Surge to Multi-Year Highs", "sentiment": "negative", "timestamp": "2025-12-09T13:30:00Z", "source": "Reuters"},
+   {"title": "Fixed Income Traders Brace for ECB Decision", "sentiment": "neutral", "timestamp": "2025-12-09T12:00:00Z", "source": "Financial Times"},
+   {"title": "Credit Spreads Widen Amid Market Uncertainty", "sentiment": "negative", "timestamp": "2025-12-09T10:45:00Z", "source": "WSJ"},
+   {"title": "Duration Risk Concerns Mount in European Markets", "sentiment": "negative", "timestamp": "2025-12-09T09:15:00Z", "source": "FT Alphaville"}
+ ]'::jsonb,
+ NOW() - INTERVAL '2 minutes'),
+
+('NOVA_MACRO_045', 'HIGH', -0.52,
+ '[
+   {"title": "Global Macro Funds Face Unprecedented Volatility", "sentiment": "negative", "timestamp": "2025-12-09T15:00:00Z", "source": "Bloomberg"},
+   {"title": "Multi-Asset Portfolios Under Pressure from Rate Swings", "sentiment": "negative", "timestamp": "2025-12-09T14:00:00Z", "source": "Reuters"},
+   {"title": "Hedge Funds Reduce Risk Amid Market Turbulence", "sentiment": "negative", "timestamp": "2025-12-09T12:30:00Z", "source": "Financial Times"},
+   {"title": "Macro Strategy Returns Turn Negative in Q4", "sentiment": "negative", "timestamp": "2025-12-09T11:00:00Z", "source": "Institutional Investor"},
+   {"title": "Market Dislocation Creates Challenges for Systematic Funds", "sentiment": "negative", "timestamp": "2025-12-09T09:30:00Z", "source": "Hedge Fund Alert"}
+ ]'::jsonb,
+ NOW() - INTERVAL '8 minutes'),
+
+('PHOENIX_CAPITAL_031', 'HIGH', -0.58,
+ '[
+   {"title": "Private Equity Portfolios Exposed to Currency Swings", "sentiment": "negative", "timestamp": "2025-12-09T14:50:00Z", "source": "Private Equity International"},
+   {"title": "FX Hedging Costs Surge for PE Funds", "sentiment": "negative", "timestamp": "2025-12-09T13:45:00Z", "source": "Bloomberg"},
+   {"title": "Capital Markets Volatility Impacts PE Exit Strategies", "sentiment": "negative", "timestamp": "2025-12-09T12:15:00Z", "source": "Financial Times"},
+   {"title": "Dollar Strength Erodes Returns for US-Based PE Investors", "sentiment": "negative", "timestamp": "2025-12-09T11:30:00Z", "source": "WSJ"},
+   {"title": "Private Capital Firms Reassess Currency Exposure", "sentiment": "negative", "timestamp": "2025-12-09T10:00:00Z", "source": "Reuters"}
+ ]'::jsonb,
+ NOW() - INTERVAL '12 minutes'),
+
+('SENTINEL_ASSETS_067', 'HIGH', -0.42,
+ '[
+   {"title": "Asset Managers Navigate Choppy FX Markets", "sentiment": "negative", "timestamp": "2025-12-09T15:15:00Z", "source": "Bloomberg"},
+   {"title": "Currency Volatility Tests Hedging Strategies", "sentiment": "negative", "timestamp": "2025-12-09T14:20:00Z", "source": "Reuters"},
+   {"title": "North American Asset Managers Face FX Headwinds", "sentiment": "negative", "timestamp": "2025-12-09T13:00:00Z", "source": "Investment News"},
+   {"title": "Risk Management Focus Intensifies Amid Market Swings", "sentiment": "neutral", "timestamp": "2025-12-09T11:45:00Z", "source": "Financial Times"},
+   {"title": "Multi-Asset Strategies Under Scrutiny as Correlations Break", "sentiment": "negative", "timestamp": "2025-12-09T10:30:00Z", "source": "Institutional Investor"}
+ ]'::jsonb,
+ NOW() - INTERVAL '6 minutes'),
+
+-- Medium switch probability clients (MEDIUM media pressure)
+('ZEUS_COMM_019', 'MEDIUM', -0.25,
+ '[
+   {"title": "Commodity Prices Stabilize After Recent Volatility", "sentiment": "neutral", "timestamp": "2025-12-09T14:30:00Z", "source": "Reuters"},
+   {"title": "Energy Markets Show Mixed Signals on Demand", "sentiment": "neutral", "timestamp": "2025-12-09T13:15:00Z", "source": "Bloomberg Energy"},
+   {"title": "European Commodity Traders Cautious Amid Rate Uncertainty", "sentiment": "negative", "timestamp": "2025-12-09T12:00:00Z", "source": "Financial Times"},
+   {"title": "Industrial Metals Face Headwinds from Strong Dollar", "sentiment": "negative", "timestamp": "2025-12-09T10:45:00Z", "source": "Mining.com"},
+   {"title": "Agricultural Commodities Outlook Remains Mixed", "sentiment": "neutral", "timestamp": "2025-12-09T09:30:00Z", "source": "Agrimoney"}
+ ]'::jsonb,
+ NOW() - INTERVAL '3 minutes'),
+
+('TITAN_EQ_008', 'MEDIUM', -0.18,
+ '[
+   {"title": "Asian Equity Markets Show Resilience Amid FX Volatility", "sentiment": "positive", "timestamp": "2025-12-09T08:00:00Z", "source": "Asia Times Financial"},
+   {"title": "Fund Managers Maintain Hedges Despite Market Calm", "sentiment": "neutral", "timestamp": "2025-12-09T07:30:00Z", "source": "Reuters"},
+   {"title": "Currency Stability Supports Asian Investment Flows", "sentiment": "positive", "timestamp": "2025-12-09T06:45:00Z", "source": "Bloomberg"},
+   {"title": "Regional Equity Funds Navigate Policy Divergence", "sentiment": "neutral", "timestamp": "2025-12-09T05:30:00Z", "source": "Financial Times Asia"},
+   {"title": "Hedging Strategies Prove Effective for Asia-Focused Funds", "sentiment": "positive", "timestamp": "2025-12-09T04:15:00Z", "source": "Fund Selector Asia"}
+ ]'::jsonb,
+ NOW() - INTERVAL '7 minutes'),
+
+('MERIDIAN_FUND_052', 'MEDIUM', -0.28,
+ '[
+   {"title": "Hedge Funds Adjust Positioning Amid Macro Uncertainty", "sentiment": "negative", "timestamp": "2025-12-09T08:30:00Z", "source": "Hedge Fund Intelligence"},
+   {"title": "Asian Opportunity Funds Face Currency Headwinds", "sentiment": "negative", "timestamp": "2025-12-09T07:45:00Z", "source": "Bloomberg"},
+   {"title": "Regional FX Volatility Tests Multi-Strategy Approaches", "sentiment": "neutral", "timestamp": "2025-12-09T06:30:00Z", "source": "AsiaHedge"},
+   {"title": "Dollar Strength Impacts EM-Focused Investment Strategies", "sentiment": "negative", "timestamp": "2025-12-09T05:15:00Z", "source": "Emerging Markets"),
+   {"title": "Hedge Funds Increase Hedging Ratios in Asian Markets", "sentiment": "neutral", "timestamp": "2025-12-09T04:00:00Z", "source": "Reuters"}
+ ]'::jsonb,
+ NOW() - INTERVAL '15 minutes'),
+
+('APEX_TRADING_089', 'MEDIUM', -0.22,
+ '[
+   {"title": "Proprietary Trading Firms Adapt to New Volatility Regime", "sentiment": "neutral", "timestamp": "2025-12-09T14:45:00Z", "source": "Trading Technology"},
+   {"title": "Systematic Strategies Show Mixed Performance in Q4", "sentiment": "neutral", "timestamp": "2025-12-09T13:30:00Z", "source": "Bloomberg"},
+   {"title": "High-Frequency Trading Volumes Surge Amid Market Swings", "sentiment": "positive", "timestamp": "2025-12-09T12:15:00Z", "source": "WSJ Markets"},
+   {"title": "Trend Following Strategies Face Challenging Environment", "sentiment": "negative", "timestamp": "2025-12-09T11:00:00Z", "source": "Financial Times"},
+   {"title": "Prop Trading Desks Reassess Risk Parameters", "sentiment": "neutral", "timestamp": "2025-12-09T09:45:00Z", "source": "Markets Media"}
+ ]'::jsonb,
+ NOW() - INTERVAL '10 minutes'),
+
+('OLYMPUS_VENTURES_024', 'MEDIUM', -0.15,
+ '[
+   {"title": "Private Equity Markets Remain Robust Despite FX Volatility", "sentiment": "positive", "timestamp": "2025-12-09T14:00:00Z", "source": "PE Hub Europe"},
+   {"title": "European VC Activity Shows Steady Growth", "sentiment": "positive", "timestamp": "2025-12-09T13:00:00Z", "source": "Sifted"},
+   {"title": "Currency Hedging Becomes Standard for Cross-Border Deals", "sentiment": "neutral", "timestamp": "2025-12-09T12:00:00Z", "source": "Financial Times"},
+   {"title": "Tech Sector Valuations Hold Despite Market Uncertainty", "sentiment": "neutral", "timestamp": "2025-12-09T10:30:00Z", "source": "TechCrunch"},
+   {"title": "Venture Capital Firms Maintain Investment Pace", "sentiment": "positive", "timestamp": "2025-12-09T09:00:00Z", "source": "Bloomberg"}
+ ]'::jsonb,
+ NOW() - INTERVAL '18 minutes'),
+
+('QUANTUM_FINANCE_015', 'MEDIUM', -0.30,
+ '[
+   {"title": "Investment Banks Navigate Complex Hedging Environment", "sentiment": "negative", "timestamp": "2025-12-09T08:45:00Z", "source": "Financial Times Asia"},
+   {"title": "Asian Financial Institutions Face FX Risk Management Challenges", "sentiment": "negative", "timestamp": "2025-12-09T07:30:00Z", "source": "Reuters"},
+   {"title": "Regulatory Focus on Currency Risk Intensifies", "sentiment": "neutral", "timestamp": "2025-12-09T06:15:00Z", "source": "Central Banking"},
+   {"title": "Banks Enhance FX Trading Infrastructure Amid Volatility", "sentiment": "neutral", "timestamp": "2025-12-09T05:00:00Z", "source": "Bloomberg"},
+   {"title": "Cross-Currency Swap Spreads Widen in Asian Markets", "sentiment": "negative", "timestamp": "2025-12-09T03:45:00Z", "source": "IFR Asia"}
+ ]'::jsonb,
+ NOW() - INTERVAL '9 minutes'),
+
+('VANGUARD_MARKETS_078', 'MEDIUM', -0.20,
+ '[
+   {"title": "Market Makers Benefit from Increased Trading Volumes", "sentiment": "positive", "timestamp": "2025-12-09T15:00:00Z", "source": "Trading Strategy"},
+   {"title": "FX Liquidity Providers See Opportunity in Volatility", "sentiment": "positive", "timestamp": "2025-12-09T14:15:00Z", "source": "FX Week"},
+   {"title": "European Market Making Firms Expand Operations", "sentiment": "positive", "timestamp": "2025-12-09T13:00:00Z", "source": "Bloomberg"},
+   {"title": "Bid-Ask Spreads Normalize After Recent Widening", "sentiment": "neutral", "timestamp": "2025-12-09T11:30:00Z", "source": "Financial Times"},
+   {"title": "Systematic Market Makers Adjust Algorithms for New Volatility", "sentiment": "neutral", "timestamp": "2025-12-09T10:00:00Z", "source": "Markets Media"}
+ ]'::jsonb,
+ NOW() - INTERVAL '20 minutes'),
+
+-- Low switch probability clients (LOW media pressure)
+('CORNERSTONE_INV_033', 'LOW', 0.12,
+ '[
+   {"title": "Long-Term Investment Strategies Weather Market Turbulence", "sentiment": "positive", "timestamp": "2025-12-09T14:30:00Z", "source": "Investment News"},
+   {"title": "Patient Capital Approach Pays Off for Asset Managers", "sentiment": "positive", "timestamp": "2025-12-09T13:15:00Z", "source": "Institutional Investor"},
+   {"title": "North American Funds Show Resilience in Q4", "sentiment": "positive", "timestamp": "2025-12-09T12:00:00Z", "source": "Pensions & Investments"},
+   {"title": "Diversification Benefits Evident in Market Volatility", "sentiment": "positive", "timestamp": "2025-12-09T10:45:00Z", "source": "Financial Times"},
+   {"title": "Conservative Strategies Outperform in Risk-Off Environment", "sentiment": "positive", "timestamp": "2025-12-09T09:30:00Z", "source": "Bloomberg"}
+ ]'::jsonb,
+ NOW() - INTERVAL '4 minutes'),
+
+('HORIZON_GLOBAL_056', 'LOW', 0.08,
+ '[
+   {"title": "Global Macro Strategies Find Balance Amid Uncertainty", "sentiment": "positive", "timestamp": "2025-12-09T15:15:00Z", "source": "Hedge Fund Journal"},
+   {"title": "European Hedge Funds Demonstrate Risk Management Excellence", "sentiment": "positive", "timestamp": "2025-12-09T14:00:00Z", "source": "Bloomberg"},
+   {"title": "Mean Reversion Strategies Prove Effective in Choppy Markets", "sentiment": "positive", "timestamp": "2025-12-09T12:45:00Z", "source": "Financial Times"},
+   {"title": "Disciplined Approach Delivers Steady Returns", "sentiment": "positive", "timestamp": "2025-12-09T11:30:00Z", "source": "AsiaHedge"},
+   {"title": "Sophisticated Hedging Protects Portfolio Values", "sentiment": "positive", "timestamp": "2025-12-09T10:15:00Z", "source": "Fund Strategy"}
+ ]'::jsonb,
+ NOW() - INTERVAL '11 minutes'),
+
+('STERLING_FX_041', 'LOW', 0.15,
+ '[
+   {"title": "Specialized FX Firms Thrive in Volatile Environment", "sentiment": "positive", "timestamp": "2025-12-09T15:30:00Z", "source": "FX Week"},
+   {"title": "Sterling Shows Resilience Against Major Currencies", "sentiment": "positive", "timestamp": "2025-12-09T14:15:00Z", "source": "Reuters"},
+   {"title": "European FX Trading Volumes Remain Healthy", "sentiment": "positive", "timestamp": "2025-12-09T13:00:00Z", "source": "Bloomberg"},
+   {"title": "UK-Based Traders Navigate Brexit Transition Successfully", "sentiment": "positive", "timestamp": "2025-12-09T11:45:00Z", "source": "Financial Times"},
+   {"title": "FX Hedging Solutions in High Demand", "sentiment": "positive", "timestamp": "2025-12-09T10:30:00Z", "source": "The Treasurer"}
+ ]'::jsonb,
+ NOW() - INTERVAL '14 minutes'),
+
+('ECLIPSE_PARTNERS_092', 'LOW', 0.18,
+ '[
+   {"title": "Proprietary Trading Firms Post Strong Q4 Results", "sentiment": "positive", "timestamp": "2025-12-09T15:45:00Z", "source": "Traders Magazine"},
+   {"title": "European Prop Trading Sector Shows Robust Growth", "sentiment": "positive", "timestamp": "2025-12-09T14:30:00Z", "source": "Bloomberg"},
+   {"title": "Advanced Risk Models Protect Trading Capital", "sentiment": "positive", "timestamp": "2025-12-09T13:15:00Z", "source": "Risk.net"},
+   {"title": "Technology Investment Pays Off for Trading Firms", "sentiment": "positive", "timestamp": "2025-12-09T12:00:00Z", "source": "Markets Media"},
+   {"title": "Volatility Creates Opportunities for Nimble Traders", "sentiment": "positive", "timestamp": "2025-12-09T10:45:00Z", "source": "Financial Times"}
+ ]'::jsonb,
+ NOW() - INTERVAL '22 minutes'),
+
+('PINNACLE_WEALTH_064', 'LOW', 0.10,
+ '[
+   {"title": "Wealth Management Clients Benefit from Stable FX Strategies", "sentiment": "positive", "timestamp": "2025-12-09T14:45:00Z", "source": "Wealth Professional"},
+   {"title": "High-Net-Worth Investors Maintain Confidence", "sentiment": "positive", "timestamp": "2025-12-09T13:30:00Z", "source": "Private Banker International"},
+   {"title": "Comprehensive Hedging Protects Client Portfolios", "sentiment": "positive", "timestamp": "2025-12-09T12:15:00Z", "source": "Family Wealth Report"},
+   {"title": "North American Wealth Managers Lead in Risk Management", "sentiment": "positive", "timestamp": "2025-12-09T11:00:00Z", "source": "Institutional Investor"},
+   {"title": "Client Retention Rates Reach Record Highs", "sentiment": "positive", "timestamp": "2025-12-09T09:45:00Z", "source": "InvestmentNews"}
+ ]'::jsonb,
+ NOW() - INTERVAL '16 minutes'),
+
+('NEXUS_CAPITAL_017', 'LOW', 0.14,
+ '[
+   {"title": "Asian Venture Capital Shows Strong Performance", "sentiment": "positive", "timestamp": "2025-12-09T08:30:00Z", "source": "Tech in Asia"},
+   {"title": "Cross-Border VC Deals Accelerate Despite Currency Volatility", "sentiment": "positive", "timestamp": "2025-12-09T07:15:00Z", "source": "Bloomberg"},
+   {"title": "Regional Tech Startups Attract Record Funding", "sentiment": "positive", "timestamp": "2025-12-09T06:00:00Z", "source": "DealStreetAsia"},
+   {"title": "Currency Hedging Strategies Protect VC Returns", "sentiment": "positive", "timestamp": "2025-12-09T04:45:00Z", "source": "PE Hub"},
+   {"title": "Asian Innovation Centers Draw Global Capital", "sentiment": "positive", "timestamp": "2025-12-09T03:30:00Z", "source": "Financial Times Asia"}
+ ]'::jsonb,
+ NOW() - INTERVAL '13 minutes'),
+
+('ROCKFORD_TRUST_088', 'LOW', 0.09,
+ '[
+   {"title": "Trust Services Sector Shows Stability Amid Market Volatility", "sentiment": "positive", "timestamp": "2025-12-09T08:45:00Z", "source": "Trusts & Estates"},
+   {"title": "Conservative Investment Approach Protects Trust Assets", "sentiment": "positive", "timestamp": "2025-12-09T07:30:00Z", "source": "Asian Banker"},
+   {"title": "Fiduciary Standards Ensure Sound Risk Management", "sentiment": "positive", "timestamp": "2025-12-09T06:15:00Z", "source": "International Trust"},
+   {"title": "Long-Term Focus Delivers Consistent Returns", "sentiment": "positive", "timestamp": "2025-12-09T05:00:00Z", "source": "WealthBriefing Asia"},
+   {"title": "Client Satisfaction Scores Remain High for Trust Services", "sentiment": "positive", "timestamp": "2025-12-09T03:45:00Z", "source": "Family Office Magazine"}
+ ]'::jsonb,
+ NOW() - INTERVAL '19 minutes'),
+
+('SUMMIT_ADVISORS_051', 'LOW', 0.11,
+ '[
+   {"title": "Financial Advisory Services in High Demand", "sentiment": "positive", "timestamp": "2025-12-09T15:00:00Z", "source": "Financial Advisor Magazine"},
+   {"title": "European Advisory Firms Expand Client Base", "sentiment": "positive", "timestamp": "2025-12-09T13:45:00Z", "source": "Citywire"},
+   {"title": "Comprehensive Planning Helps Clients Navigate Uncertainty", "sentiment": "positive", "timestamp": "2025-12-09T12:30:00Z", "source": "Financial Planning"},
+   {"title": "Trend-Setting Strategies Deliver Alpha for Clients", "sentiment": "positive", "timestamp": "2025-12-09T11:15:00Z", "source": "Professional Adviser"},
+   {"title": "Advisory Excellence Recognized by Industry Awards", "sentiment": "positive", "timestamp": "2025-12-09T10:00:00Z", "source": "Money Management"}
+ ]'::jsonb,
+ NOW() - INTERVAL '17 minutes')
+
+ON CONFLICT DO NOTHING;
