@@ -86,7 +86,7 @@ function App() {
         ...profileRes.data,
         timeline: timelineRes.data,
         insights: insightsRes.data,
-        media: mediaRes.data,
+        //media: mediaRes.data,
       };
       
       setSelectedClient(clientId);
