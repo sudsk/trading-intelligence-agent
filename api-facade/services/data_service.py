@@ -436,6 +436,8 @@ class DataService:
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
+
+            months = 12 # For demo
             
             # Query columns that actually exist in the table
             query = """
@@ -447,11 +449,11 @@ class DataService:
                     end_date
                 FROM client_regimes
                 WHERE client_id = %s
-                  AND start_date > CURRENT_DATE - INTERVAL '%s months'
+                  AND start_date > CURRENT_DATE - INTERVAL '{months} months'
                 ORDER BY start_date DESC
             """
             
-            cursor.execute(query, (client_id, months))
+            cursor.execute(query, (client_id,))
             rows = cursor.fetchall()
             
             timeline = []
