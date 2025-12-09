@@ -228,12 +228,12 @@ class MCPDataService:
             logger.error(f"Error fetching risk metrics via MCP: {e}")
             return {}
     
-    def get_features(self, client_id: str, days: int = 90) -> Dict[str, Any]:
+    def get_client_features(self, client_id: str, days: int = 90) -> Dict[str, Any]:
         """Get trading features via Risk MCP Server (HTTP)."""
         try:
             result = self._call_tool(
                 server_url=self.risk_server_url,
-                tool_name='get_features',
+                tool_name='get_client_features',
                 arguments={
                     'client_id': client_id,
                     'days': days
