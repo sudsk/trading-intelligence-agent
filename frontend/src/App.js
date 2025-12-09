@@ -59,40 +59,37 @@ function App() {
   };
 
   const selectClient = async (clientId) => {
-    // ← ADD: Prevent duplicate calls
     if (loading) {
       console.log('Already loading, skipping...');
       return;
     }
     
-    // ← ADD: Check cache first
     if (profileCache[clientId]) {
       console.log('Using cached profile for', clientId);
       setSelectedClient(clientId);
       setProfile(profileCache[clientId]);
       return;
     }
-    
+
+    console.log('Loading profile from database for', clientId);
     setLoading(true);
     try {
-      const [profileRes, timelineRes, insightsRes, mediaRes] = await Promise.all([
+      // All 3 calls return instant data from database
+      const [profileRes, timelineRes, insightsRes] = await Promise.all([
         clientsAPI.getProfile(clientId),
         clientsAPI.getTimeline(clientId),
         clientsAPI.getInsights(clientId),
-        //clientsAPI.getMedia(clientId),
-      ]);
+      ]);    
 
       const fullProfile = {
         ...profileRes.data,
         timeline: timelineRes.data,
         insights: insightsRes.data,
-        //media: mediaRes.data,
       };
       
       setSelectedClient(clientId);
       setProfile(fullProfile);
-
-      // ← ADD: Store in cache
+  
       setProfileCache(prev => ({
         ...prev,
         [clientId]: fullProfile
@@ -105,19 +102,32 @@ function App() {
     }
   };
 
-  // ← ADD: Manual refresh function
   const refreshProfile = async () => {
     if (!selectedClient || loading) return;
     
-    // Clear cache for this client
-    setProfileCache(prev => {
-      const updated = { ...prev };
-      delete updated[selectedClient];
-      return updated;
-    });
+    console.log('🔄 Triggering fresh analysis for', selectedClient);
+    setLoading(true);
     
-    // Reload
-    await selectClient(selectedClient);
+    try {
+      // Step 1: Trigger agent analysis (20s)
+      await clientsAPI.triggerAnalysis(selectedClient);
+      console.log('✅ Analysis complete, fetching updated data...');
+      
+      // Step 2: Clear cache for this client
+      setProfileCache(prev => {
+        const updated = { ...prev };
+        delete updated[selectedClient];
+        return updated;
+      });
+      
+      // Step 3: Reload from database (now has fresh data)
+      await selectClient(selectedClient);
+      
+    } catch (error) {
+      console.error('❌ Error refreshing profile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
