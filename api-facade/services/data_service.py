@@ -563,17 +563,10 @@ class DataService:
                 rm = "Unknown"
                 primary_exposure = "N/A"
             
-            # Transform drivers from dict to array of strings
-            drivers_dict = row_dict.get("drivers") or {}
-            if isinstance(drivers_dict, dict):
-                # Convert to array like ["Pattern Break: 0.28", "Changepoint: 0.23", ...]
-                # Sort by value descending to show most significant drivers first
-                drivers = [
-                    f"{key.replace('_', ' ').title()}: {value:.2f}"
-                    for key, value in sorted(drivers_dict.items(), key=lambda x: x[1], reverse=True)
-                ]
-            else:
-                drivers = []
+            # SIMPLIFIED - drivers is already an array from Gemini
+            drivers = row_dict.get("drivers") or []
+            if not isinstance(drivers, list):
+                drivers = []  # Fallback only
             
             # Ensure other JSONB fields are proper arrays
             risk_flags = row_dict.get("risk_flags")
@@ -594,7 +587,7 @@ class DataService:
                 "segment": row_dict["segment"],
                 "switchProb": float(row_dict["switch_prob"]) if row_dict["switch_prob"] else 0.0,
                 "confidence": float(row_dict["confidence"]) if row_dict["confidence"] else 0.0,
-                "drivers": drivers,  # ✅ Now an array: ["Pattern Break: 0.28", "Changepoint: 0.23", ...]
+                "drivers": drivers,  
                 "riskFlags": risk_flags,
                 "primaryExposure": primary_exposure,
                 "analyzed_at": row_dict["computed_at"].isoformat() if row_dict["computed_at"] else None,
