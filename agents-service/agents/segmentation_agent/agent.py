@@ -90,7 +90,8 @@ class SegmentationAgent:
                 prompt,
                 generation_config=self.generation_config
             )
-            
+            logger.info(f"Raw Gemini response: {response.text[:1000]}")  # First 1000 chars
+
             # Step 4: Parse response
             result = self._parse_gemini_response(response.text, client_id)
             
