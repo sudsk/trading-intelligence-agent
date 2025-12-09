@@ -563,22 +563,47 @@ class DataService:
                 rm = "Unknown"
                 primary_exposure = "N/A"
             
+            # Transform drivers from dict to array of strings
+            drivers_dict = row_dict.get("drivers") or {}
+            if isinstance(drivers_dict, dict):
+                # Convert to array like ["Pattern Break: 0.28", "Changepoint: 0.23", ...]
+                # Sort by value descending to show most significant drivers first
+                drivers = [
+                    f"{key.replace('_', ' ').title()}: {value:.2f}"
+                    for key, value in sorted(drivers_dict.items(), key=lambda x: x[1], reverse=True)
+                ]
+            else:
+                drivers = []
+            
+            # Ensure other JSONB fields are proper arrays
+            risk_flags = row_dict.get("risk_flags")
+            if not isinstance(risk_flags, list):
+                risk_flags = []
+            
+            headlines = row_dict.get("headlines")
+            if not isinstance(headlines, list):
+                headlines = []
+            
+            recommendations = row_dict.get("recommendations")
+            if not isinstance(recommendations, list):
+                recommendations = []
+            
             return {
                 "clientId": client_id,
                 "rm": rm,
                 "segment": row_dict["segment"],
                 "switchProb": float(row_dict["switch_prob"]) if row_dict["switch_prob"] else 0.0,
                 "confidence": float(row_dict["confidence"]) if row_dict["confidence"] else 0.0,
-                "drivers": row_dict["drivers"] or [],
-                "riskFlags": row_dict["risk_flags"] or [],
+                "drivers": drivers,  # ✅ Now an array: ["Pattern Break: 0.28", "Changepoint: 0.23", ...]
+                "riskFlags": risk_flags,
                 "primaryExposure": primary_exposure,
                 "analyzed_at": row_dict["computed_at"].isoformat() if row_dict["computed_at"] else None,
                 "media": {
                     "pressure": row_dict["media_pressure"] or "UNKNOWN",
                     "sentiment": float(row_dict["sentiment_score"]) if row_dict["sentiment_score"] else 0.0,
-                    "headlines": row_dict["headlines"] or []
+                    "headlines": headlines
                 },
-                "recommendations": row_dict["recommendations"] or []
+                "recommendations": recommendations
             }
             
         finally:
