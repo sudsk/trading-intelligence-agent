@@ -378,7 +378,7 @@ INSERT INTO media_analysis (client_id, pressure, sentiment_score, headlines, ana
    {"title": "Hedge Funds Adjust Positioning Amid Macro Uncertainty", "sentiment": "negative", "timestamp": "2025-12-09T08:30:00Z", "source": "Hedge Fund Intelligence"},
    {"title": "Asian Opportunity Funds Face Currency Headwinds", "sentiment": "negative", "timestamp": "2025-12-09T07:45:00Z", "source": "Bloomberg"},
    {"title": "Regional FX Volatility Tests Multi-Strategy Approaches", "sentiment": "neutral", "timestamp": "2025-12-09T06:30:00Z", "source": "AsiaHedge"},
-   {"title": "Dollar Strength Impacts EM-Focused Investment Strategies", "sentiment": "negative", "timestamp": "2025-12-09T05:15:00Z", "source": "Emerging Markets"),
+   {"title": "Dollar Strength Impacts EM-Focused Investment Strategies", "sentiment": "negative", "timestamp": "2025-12-09T05:15:00Z", "source": "Emerging Markets"},
    {"title": "Hedge Funds Increase Hedging Ratios in Asian Markets", "sentiment": "neutral", "timestamp": "2025-12-09T04:00:00Z", "source": "Reuters"}
  ]'::jsonb,
  NOW() - INTERVAL '15 minutes'),
