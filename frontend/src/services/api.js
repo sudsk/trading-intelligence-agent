@@ -9,15 +9,15 @@ const api = axios.create({
 
 export const clientsAPI = {
   getAll: (params = {}) => api.get('/clients/', { params }),
-  getProfile: (clientId) => api.get(`/clients/${clientId}/profile`),
-  getTimeline: (clientId) => api.get(`/clients/${clientId}/timeline`),  
-  getInsights: (clientId) => api.get(`/clients/${clientId}/insights`),  
-  getMedia: (clientId) => api.get(`/clients/${clientId}/media`),        
+  getProfile: (clientId) => api.get(`/clients/${clientId}/profile`),      // ← Returns cached DB data
+  getTimeline: (clientId) => api.get(`/clients/${clientId}/timeline`),
+  getInsights: (clientId) => api.get(`/clients/${clientId}/insights`),
+  triggerAnalysis: (clientId) => api.post(`/clients/${clientId}/analyze`), // ← NEW: Triggers agent analysis
 };
 
 export const actionsAPI = {
   create: (action) => api.post('/actions/', action),
-  get: (actionId) => api.get(`/actions/${actionId}`),                   
+  get: (actionId) => api.get(`/actions/${actionId}`),
 };
 
 export default api;
