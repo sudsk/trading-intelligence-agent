@@ -548,18 +548,30 @@ class DataService:
             columns = [desc[0] for desc in cursor.description]
             row_dict = dict(zip(columns, row))
             
-            # Get client metadata from MCP
-            client_data = self.mcp_service.get_client(client_id)
+            # Get client metadata from MCP using the call_mcp_tool method
+            try:
+                client_response = self.call_mcp_tool(
+                    server_url=self.client_server_url,
+                    tool_name='get_client',
+                    arguments={'client_id': client_id}
+                )
+                client_data = client_response.get('client', {})
+                rm = client_data.get('rm', 'Unknown')
+                primary_exposure = client_data.get('primary_exposure', 'N/A')
+            except Exception as e:
+                logger.warning(f"Could not fetch client metadata from MCP: {e}")
+                rm = "Unknown"
+                primary_exposure = "N/A"
             
             return {
                 "clientId": client_id,
-                "rm": client_data.get("rm", "Unknown"),
+                "rm": rm,
                 "segment": row_dict["segment"],
                 "switchProb": float(row_dict["switch_prob"]) if row_dict["switch_prob"] else 0.0,
                 "confidence": float(row_dict["confidence"]) if row_dict["confidence"] else 0.0,
                 "drivers": row_dict["drivers"] or [],
                 "riskFlags": row_dict["risk_flags"] or [],
-                "primaryExposure": client_data.get("primary_exposure", "N/A"),
+                "primaryExposure": primary_exposure,
                 "analyzed_at": row_dict["computed_at"].isoformat() if row_dict["computed_at"] else None,
                 "media": {
                     "pressure": row_dict["media_pressure"] or "UNKNOWN",
