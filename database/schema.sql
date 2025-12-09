@@ -52,7 +52,7 @@ CREATE TABLE client_regimes (
     id SERIAL PRIMARY KEY,
     client_id VARCHAR(50),
     segment VARCHAR(50) NOT NULL,
-    period VARCHAR(50) NOT NULL,  -- e.g., "Q1 2024", "Jan-Mar 2024"
+    period VARCHAR(50) NOT NULL,  -- e.g., "Q1 2025", "Jan-Mar 2025"
     description TEXT,
     start_date DATE NOT NULL,
     end_date DATE,
@@ -170,73 +170,73 @@ ON CONFLICT DO NOTHING;
 -- Sample Timeline Data for Demo Clients
 INSERT INTO client_regimes (client_id, segment, period, description, start_date, end_date) VALUES
   -- ACME_FX_023 - Evolved from Hedger to Trend Follower
-  ('ACME_FX_023', 'Hedger', 'Q1 2025', 'Conservative hedging strategy', '2024-01-01', '2024-03-31'),
-  ('ACME_FX_023', 'Mean Reverter', 'Q2 2025', 'Shifted to mean reversion after volatility spike', '2024-04-01', '2024-06-30'),
-  ('ACME_FX_023', 'Trend Follower', 'Q3-Q4 2025', 'Adopted momentum following strategy', '2024-07-01', NULL),
+  ('ACME_FX_023', 'Hedger', 'Q1 2025', 'Conservative hedging strategy', '2025-01-01', '2025-03-31'),
+  ('ACME_FX_023', 'Mean Reverter', 'Q2 2025', 'Shifted to mean reversion after volatility spike', '2025-04-01', '2025-06-30'),
+  ('ACME_FX_023', 'Trend Follower', 'Q3-Q4 2025', 'Adopted momentum following strategy', '2025-07-01', NULL),
   
   -- PHOENIX_CAPITAL_031 - Consistent Trend Follower
-  ('PHOENIX_CAPITAL_031', 'Trend Follower', 'Q1-Q2 2025', 'Strong momentum bias', '2024-01-01', '2024-06-30'),
-  ('PHOENIX_CAPITAL_031', 'Trend Follower', 'Q3-Q4 2025', 'Continued momentum strategy', '2024-07-01', NULL),
+  ('PHOENIX_CAPITAL_031', 'Trend Follower', 'Q1-Q2 2025', 'Strong momentum bias', '2025-01-01', '2025-06-30'),
+  ('PHOENIX_CAPITAL_031', 'Trend Follower', 'Q3-Q4 2025', 'Continued momentum strategy', '2025-07-01', NULL),
   
   -- NOVA_MACRO_045 - Volatile switches
-  ('NOVA_MACRO_045', 'Trend Setter', 'Q1 2025', 'Aggressive positioning', '2024-01-01', '2024-03-31'),
-  ('NOVA_MACRO_045', 'Mean Reverter', 'Q2 2025', 'Pivot to contrarian trades', '2024-04-01', '2024-06-30'),
-  ('NOVA_MACRO_045', 'Mean Reverter', 'Q3-Q4 2025', 'Maintained reversal strategy', '2024-07-01', NULL),
+  ('NOVA_MACRO_045', 'Trend Setter', 'Q1 2025', 'Aggressive positioning', '2025-01-01', '2025-03-31'),
+  ('NOVA_MACRO_045', 'Mean Reverter', 'Q2 2025', 'Pivot to contrarian trades', '2025-04-01', '2025-06-30'),
+  ('NOVA_MACRO_045', 'Mean Reverter', 'Q3-Q4 2025', 'Maintained reversal strategy', '2025-07-01', NULL),
   
   -- ATLAS_BOND_012 - Evolved to Trend Setter
-  ('ATLAS_BOND_012', 'Hedger', 'Q1-Q2 2025', 'Risk-off positioning', '2024-01-01', '2024-06-30'),
-  ('ATLAS_BOND_012', 'Trend Setter', 'Q3-Q4 2025', 'More aggressive trend setting', '2024-07-01', NULL),
+  ('ATLAS_BOND_012', 'Hedger', 'Q1-Q2 2025', 'Risk-off positioning', '2025-01-01', '2025-06-30'),
+  ('ATLAS_BOND_012', 'Trend Setter', 'Q3-Q4 2025', 'More aggressive trend setting', '2025-07-01', NULL),
   
   -- SENTINEL_ASSETS_067 - Stable Hedger
-  ('SENTINEL_ASSETS_067', 'Hedger', 'Q1-Q4 2025', 'Consistent hedging approach', '2024-01-01', NULL),
+  ('SENTINEL_ASSETS_067', 'Hedger', 'Q1-Q4 2025', 'Consistent hedging approach', '2025-01-01', NULL),
   
   -- ZEUS_COMM_019 - Mean Reverter throughout
-  ('ZEUS_COMM_019', 'Mean Reverter', 'Q1-Q2 2025', 'Commodity mean reversion', '2024-01-01', '2024-06-30'),
-  ('ZEUS_COMM_019', 'Mean Reverter', 'Q3-Q4 2025', 'Continued mean reversion', '2024-07-01', NULL),
+  ('ZEUS_COMM_019', 'Mean Reverter', 'Q1-Q2 2025', 'Commodity mean reversion', '2025-01-01', '2025-06-30'),
+  ('ZEUS_COMM_019', 'Mean Reverter', 'Q3-Q4 2025', 'Continued mean reversion', '2025-07-01', NULL),
   
   -- TITAN_EQ_008 - Stable Hedger
-  ('TITAN_EQ_008', 'Hedger', 'Q1-Q4 2025', 'Equity hedging strategy', '2024-01-01', NULL),
+  ('TITAN_EQ_008', 'Hedger', 'Q1-Q4 2025', 'Equity hedging strategy', '2025-01-01', NULL),
   
   -- MERIDIAN_FUND_052 - Trend Setter evolution
-  ('MERIDIAN_FUND_052', 'Trend Follower', 'Q1 2025', 'Momentum trading', '2024-01-01', '2024-03-31'),
-  ('MERIDIAN_FUND_052', 'Trend Setter', 'Q2-Q4 2025', 'Leading market moves', '2024-04-01', NULL),
+  ('MERIDIAN_FUND_052', 'Trend Follower', 'Q1 2025', 'Momentum trading', '2025-01-01', '2025-03-31'),
+  ('MERIDIAN_FUND_052', 'Trend Setter', 'Q2-Q4 2025', 'Leading market moves', '2025-04-01', NULL),
   
   -- APEX_TRADING_089 - Consistent Trend Follower
-  ('APEX_TRADING_089', 'Trend Follower', 'Q1-Q4 2025', 'Systematic trend following', '2024-01-01', NULL),
+  ('APEX_TRADING_089', 'Trend Follower', 'Q1-Q4 2025', 'Systematic trend following', '2025-01-01', NULL),
   
   -- OLYMPUS_VENTURES_024 - Mean Reverter
-  ('OLYMPUS_VENTURES_024', 'Mean Reverter', 'Q1-Q4 2025', 'Value-focused reversals', '2024-01-01', NULL),
+  ('OLYMPUS_VENTURES_024', 'Mean Reverter', 'Q1-Q4 2025', 'Value-focused reversals', '2025-01-01', NULL),
   
   -- QUANTUM_FINANCE_015 - Hedger with recent evolution
-  ('QUANTUM_FINANCE_015', 'Hedger', 'Q1-Q3 2025', 'Conservative hedging', '2024-01-01', '2024-09-30'),
-  ('QUANTUM_FINANCE_015', 'Hedger', 'Q4 2025', 'Maintained hedging focus', '2024-10-01', NULL),
+  ('QUANTUM_FINANCE_015', 'Hedger', 'Q1-Q3 2025', 'Conservative hedging', '2025-01-01', '2025-09-30'),
+  ('QUANTUM_FINANCE_015', 'Hedger', 'Q4 2025', 'Maintained hedging focus', '2025-10-01', NULL),
   
   -- VANGUARD_MARKETS_078 - Trend Setter
-  ('VANGUARD_MARKETS_078', 'Trend Setter', 'Q1-Q4 2025', 'Market making with directional bias', '2024-01-01', NULL),
+  ('VANGUARD_MARKETS_078', 'Trend Setter', 'Q1-Q4 2025', 'Market making with directional bias', '2025-01-01', NULL),
   
   -- CORNERSTONE_INV_033 - Stable Trend Follower
-  ('CORNERSTONE_INV_033', 'Trend Follower', 'Q1-Q4 2025', 'Long-term momentum', '2024-01-01', NULL),
+  ('CORNERSTONE_INV_033', 'Trend Follower', 'Q1-Q4 2025', 'Long-term momentum', '2025-01-01', NULL),
   
   -- HORIZON_GLOBAL_056 - Mean Reverter
-  ('HORIZON_GLOBAL_056', 'Mean Reverter', 'Q1-Q4 2025', 'Global macro reversals', '2024-01-01', NULL),
+  ('HORIZON_GLOBAL_056', 'Mean Reverter', 'Q1-Q4 2025', 'Global macro reversals', '2025-01-01', NULL),
   
   -- STERLING_FX_041 - Stable Hedger
-  ('STERLING_FX_041', 'Hedger', 'Q1-Q4 2025', 'FX hedging specialist', '2024-01-01', NULL),
+  ('STERLING_FX_041', 'Hedger', 'Q1-Q4 2025', 'FX hedging specialist', '2025-01-01', NULL),
   
   -- ECLIPSE_PARTNERS_092 - Trend Setter
-  ('ECLIPSE_PARTNERS_092', 'Trend Setter', 'Q1-Q4 2025', 'Prop trading momentum', '2024-01-01', NULL),
+  ('ECLIPSE_PARTNERS_092', 'Trend Setter', 'Q1-Q4 2025', 'Prop trading momentum', '2025-01-01', NULL),
   
   -- PINNACLE_WEALTH_064 - Trend Follower
-  ('PINNACLE_WEALTH_064', 'Trend Follower', 'Q1-Q4 2025', 'Client portfolio momentum', '2024-01-01', NULL),
+  ('PINNACLE_WEALTH_064', 'Trend Follower', 'Q1-Q4 2025', 'Client portfolio momentum', '2025-01-01', NULL),
   
   -- NEXUS_CAPITAL_017 - Mean Reverter
-  ('NEXUS_CAPITAL_017', 'Mean Reverter', 'Q1-Q4 2025', 'VC-backed reversals', '2024-01-01', NULL),
+  ('NEXUS_CAPITAL_017', 'Mean Reverter', 'Q1-Q4 2025', 'VC-backed reversals', '2025-01-01', NULL),
   
   -- ROCKFORD_TRUST_088 - Hedger
-  ('ROCKFORD_TRUST_088', 'Hedger', 'Q1-Q4 2025', 'Trust fund hedging', '2024-01-01', NULL),
+  ('ROCKFORD_TRUST_088', 'Hedger', 'Q1-Q4 2025', 'Trust fund hedging', '2025-01-01', NULL),
   
   -- SUMMIT_ADVISORS_051 - Trend Setter
-  ('SUMMIT_ADVISORS_051', 'Trend Setter', 'Q1-Q4 2025', 'Advisory-driven trends', '2024-01-01', NULL)
+  ('SUMMIT_ADVISORS_051', 'Trend Setter', 'Q1-Q4 2025', 'Advisory-driven trends', '2025-01-01', NULL)
 ON CONFLICT DO NOTHING;
 
 
