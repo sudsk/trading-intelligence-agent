@@ -93,7 +93,7 @@ async def list_clients(
         )
 
 @router.get("/{client_id}/profile")
-async def get_client_profile(
+def get_client_profile(
     client_id: str,
     data_service: DataService = Depends()
 ):
@@ -114,7 +114,7 @@ async def get_client_profile(
     
     try:
         # Get latest analysis from database (fast query)
-        profile = await data_service.get_client_profile_from_db(client_id)
+        profile = data_service.get_client_profile_from_db(client_id)
         
         if not profile:
             raise HTTPException(
