@@ -26,7 +26,7 @@ class AgentClient:
             'AGENTS_SERVICE_URL',
             'http://localhost:8001'
         )
-        self.timeout = 30.0  # Gemini calls can take time
+        self.timeout = 60.0  # Gemini calls can take time
         
         logger.info(f"🔗 Agent Client initialized: {self.base_url}")
     
