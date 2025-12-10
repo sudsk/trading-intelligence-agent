@@ -26,7 +26,7 @@ class AgentClient:
             'AGENTS_SERVICE_URL',
             'http://localhost:8001'
         )
-        self.timeout = 60.0  # Gemini calls can take time
+        self.timeout = 90.0  # Gemini calls can take time
         
         logger.info(f"🔗 Agent Client initialized: {self.base_url}")
     
@@ -44,7 +44,8 @@ class AgentClient:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(
                     f"{self.base_url}/analyze",
-                    json={"client_id": client_id}
+                    json={"client_id": client_id},
+                    timeout=90.0  # ← Explicit 90 second timeout
                 )
                 response.raise_for_status()
                 return response.json()
