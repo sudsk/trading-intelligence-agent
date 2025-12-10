@@ -110,7 +110,9 @@ function App() {
     
     try {
       // Step 1: Trigger agent analysis (20s)
-      await clientsAPI.triggerAnalysis(selectedClient);
+      await clientsAPI.triggerAnalysis(selectedClient, {
+        timeout: 90000  // 90 seconds in milliseconds
+      });
       console.log('✅ Analysis complete, fetching updated data...');
       
       // Step 2: Clear cache for this client
