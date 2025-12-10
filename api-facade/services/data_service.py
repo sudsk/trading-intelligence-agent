@@ -21,6 +21,7 @@ class DataService:
     
     def __init__(self):
         """Initialize database connection."""
+        self.client_server_url = os.getenv('CLIENT_MCP_URL', 'http://client-mcp:3005')
         self.database_url = os.getenv('DATABASE_URL')
         if not self.database_url:
             logger.warning("DATABASE_URL not set, using default")
@@ -476,7 +477,26 @@ class DataService:
             logger.error(f"❌ Error fetching timeline: {e}")
             return []
 
-
+    def _call_mcp_server(self, server_url: str, tool_name: str, arguments: dict) -> dict:
+        """Call MCP server directly via HTTP"""
+        import requests
+        
+        try:
+            response = requests.post(
+                f"{server_url}/call_tool",
+                json={
+                    "tool": tool_name,
+                    "arguments": arguments
+                },
+                timeout=5.0
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result
+        except Exception as e:
+            logger.error(f"MCP call failed: {e}")
+            return {}
+        
     def get_client_profile_from_db(self, client_id: str) -> Dict[str, Any]:
         """
         Get latest cached client profile from database.
@@ -548,10 +568,10 @@ class DataService:
             columns = [desc[0] for desc in cursor.description]
             row_dict = dict(zip(columns, row))
             
-            # Get client metadata from MCP using the call_mcp_tool method
+            # Get client metadata from MCP
             try:
-                client_response = self.call_mcp_tool(
-                    server_url=self.client_server_url,
+                client_response = self._call_mcp_server(
+                    server_url=self.client_server_url,  # e.g., "http://client-mcp:3005"
                     tool_name='get_client',
                     arguments={'client_id': client_id}
                 )
