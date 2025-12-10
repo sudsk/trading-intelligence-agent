@@ -322,33 +322,4 @@ Output:
   "reasoning": "Demonstrates anticipatory positioning with solid alpha generation. EUR concentration creates single-point risk requiring monitoring."
 }
 ```
-
-**Example 5: Erratic Trader Switching Strategies**
-Input:
-- 320 trades in 90 days
-- Multiple instruments
-- 8.2 day average holding (was 3.5d last month)
-- 22 position flips in 30 days (was 8/month previously)
-- 52% market orders
-- Recent pattern: "Highly inconsistent, rapid changes"
-
-Output:
-```json
-{
-  "segment": "Mean Reverter",
-  "confidence": 0.58,
-  "switch_prob": 0.79,
-  "drivers": [
-    "Very high flip frequency (22/month) suggests reversals",
-    "Holding period doubling from 3.5d to 8.2d",
-    "Mixed order usage indicates strategy uncertainty"
-  ],
-  "risk_flags": [
-    "erratic behavior",
-    "strategy drift",
-    "holding period volatility"
-  ],
-  "reasoning": "Current behavior suggests mean reversion but dramatic pattern changes indicate high probability of strategy switch. Confidence moderate due to inconsistency."
-}
-```
 """
