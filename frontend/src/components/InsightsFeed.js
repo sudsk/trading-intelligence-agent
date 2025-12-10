@@ -18,6 +18,7 @@ const InsightsFeed = ({ insights }) => {
       case 'SIGNAL': return '📊';
       case 'ACTION': return '✅';
       case 'OUTCOME': return '💰';
+      case 'ALERT': return '🚨';  
       default: return '📝';
     }
   };
@@ -71,7 +72,7 @@ const InsightsFeed = ({ insights }) => {
                   {formatTimestamp(insight.timestamp)}
                 </span>
               </div>
-              <div className="insight-message">{insight.message}</div>
+              <div className="insight-message">{insight.description || insight.message || 'No description'}</div>
             </div>
           </div>
         ))}
