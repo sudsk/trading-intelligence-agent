@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 90000  // ← 90 seconds default for all requests
 });
 
 export const clientsAPI = {
@@ -12,7 +13,9 @@ export const clientsAPI = {
   getProfile: (clientId) => api.get(`/clients/${clientId}/profile`),      // ← Returns cached DB data
   getTimeline: (clientId) => api.get(`/clients/${clientId}/timeline`),
   getInsights: (clientId) => api.get(`/clients/${clientId}/insights`),
-  triggerAnalysis: (clientId) => api.post(`/clients/${clientId}/analyze`), // ← NEW: Triggers agent analysis
+  triggerAnalysis: (clientId) => api.post(`/clients/${clientId}/analyze`, {}, {
+    timeout: 90000  // ← Explicit 90s timeout for analysis
+  })
 };
 
 export const actionsAPI = {
