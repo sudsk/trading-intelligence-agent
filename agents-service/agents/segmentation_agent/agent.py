@@ -41,7 +41,7 @@ class SegmentationAgent:
             
             # Configure generation
             self.generation_config = {
-                "temperature": 0.3,  # Lower for more consistent classifications
+                "temperature": 0.2,  # Lower for more consistent classifications
                 "top_p": 0.95,
                 "top_k": 40,
                 "max_output_tokens": 2048,
