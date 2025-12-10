@@ -83,8 +83,8 @@ function App() {
 
       const fullProfile = {
         ...profileRes.data,
-        timeline: timelineRes.data,
-        insights: insightsRes.data,
+        timeline: timelineRes.data.timeline,
+        insights: insightsRes.data.insights,
       };
       
       setSelectedClient(clientId);
