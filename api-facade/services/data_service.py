@@ -21,7 +21,7 @@ class DataService:
     
     def __init__(self):
         """Initialize database connection."""
-        self.client_server_url = os.getenv('CLIENT_MCP_URL', 'http://client-mcp:3005')
+        self.client_server_url = os.getenv('MCP_CLIENT_SERVER_URL', 'http://localhost:3005')
         self.database_url = os.getenv('DATABASE_URL')
         if not self.database_url:
             logger.warning("DATABASE_URL not set, using default")
