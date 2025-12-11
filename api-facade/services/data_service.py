@@ -480,16 +480,15 @@ class DataService:
 
     def _call_mcp_server(self, server_url: str, tool_name: str, arguments: dict) -> dict:
         """Call MCP server directly via HTTP"""
-        import httpx
-        
+       
         try:
             request_body = {
-                "tool_name": tool_name,  # ✅ Correct field name
+                "tool_name": tool_name,
                 "arguments": arguments
             }
             
-            logger.info(f"🔗 MCP Request to {server_url}/call_tool")
-            logger.info(f"📤 Request body: {json.dumps(request_body, indent=2)}")
+            #logger.info(f"🔗 MCP Request to {server_url}/call_tool")
+            #logger.info(f"📤 Request body: {json.dumps(request_body, indent=2)}")
             
             with httpx.Client(timeout=5.0) as client:
                 response = client.post(
@@ -498,21 +497,19 @@ class DataService:
                 )
                 
                 logger.info(f"📥 Response status: {response.status_code}")
-                logger.info(f"📥 Response body: {response.text[:500]}")
                 
                 response.raise_for_status()
                 result = response.json()
                 
-                logger.info(f"✅ Parsed response: {json.dumps(result, indent=2)[:500]}")
+                #logger.info(f"✅ Full response structure: {json.dumps(result, indent=2)}")
                 
-                # MCP response format: {"content": [...]}
-                if 'content' in result and len(result['content']) > 0:
-                    content = result['content'][0]
-                    if 'text' in content:
-                        parsed = json.loads(content['text'])
-                        logger.info(f"✅ Final parsed data: {parsed}")
-                        return parsed
+                if 'result' in result and 'client' in result['result']:
+                    client_data = result['result']['client']
+                    logger.info(f"✅ Extracted client data: {client_data}")
+                    return client_data
                 
+                # Fallback: return full result
+                logger.warning(f"⚠️ Unexpected response structure, returning full result")
                 return result
                 
         except httpx.HTTPStatusError as e:
