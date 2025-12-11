@@ -483,28 +483,44 @@ class DataService:
         import httpx
         
         try:
+            request_body = {
+                "tool_name": tool_name,  # ✅ Correct field name
+                "arguments": arguments
+            }
+            
+            logger.info(f"🔗 MCP Request to {server_url}/call_tool")
+            logger.info(f"📤 Request body: {json.dumps(request_body, indent=2)}")
+            
             with httpx.Client(timeout=5.0) as client:
                 response = client.post(
                     f"{server_url}/call_tool",
-                    json={
-                        "tool_name": tool_name,      
-                        "arguments": arguments
-                    }
+                    json=request_body
                 )
+                
+                logger.info(f"📥 Response status: {response.status_code}")
+                logger.info(f"📥 Response body: {response.text[:500]}")
+                
                 response.raise_for_status()
                 result = response.json()
                 
+                logger.info(f"✅ Parsed response: {json.dumps(result, indent=2)[:500]}")
+                
                 # MCP response format: {"content": [...]}
-                # Extract the actual data from content array
                 if 'content' in result and len(result['content']) > 0:
                     content = result['content'][0]
                     if 'text' in content:
-                        return json.loads(content['text'])
+                        parsed = json.loads(content['text'])
+                        logger.info(f"✅ Final parsed data: {parsed}")
+                        return parsed
                 
                 return result
                 
+        except httpx.HTTPStatusError as e:
+            logger.error(f"❌ MCP HTTP error: {e}")
+            logger.error(f"❌ Response body: {e.response.text}")
+            return {}
         except Exception as e:
-            logger.error(f"MCP call failed: {e}")
+            logger.error(f"❌ MCP call failed: {e}", exc_info=True)
             return {}
         
     def get_client_profile_from_db(self, client_id: str) -> Dict[str, Any]:
