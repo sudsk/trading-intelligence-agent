@@ -479,20 +479,31 @@ class DataService:
             return []
 
     def _call_mcp_server(self, server_url: str, tool_name: str, arguments: dict) -> dict:
-        """Call MCP server directly via HTTPX"""
+        """Call MCP server directly via HTTP"""
+        import httpx
         
         try:
             with httpx.Client(timeout=5.0) as client:
                 response = client.post(
                     f"{server_url}/call_tool",
                     json={
-                        "tool": tool_name,
+                        "name": tool_name,      
                         "arguments": arguments
                     }
                 )
                 response.raise_for_status()
                 result = response.json()
+                
+                # MCP response format: {"content": [...]}
+                # Extract the actual data from content array
+                if 'content' in result and len(result['content']) > 0:
+                    content = result['content'][0]
+                    if 'text' in content:
+                        import json
+                        return json.loads(content['text'])
+                
                 return result
+                
         except Exception as e:
             logger.error(f"MCP call failed: {e}")
             return {}
@@ -571,13 +582,12 @@ class DataService:
             # Get client metadata from MCP
             try:
                 client_response = self._call_mcp_server(
-                    server_url=self.client_server_url,  # e.g., "http://client-mcp:3005"
+                    server_url=self.client_server_url,  
                     tool_name='get_client',
                     arguments={'client_id': client_id}
                 )
-                client_data = client_response.get('client', {})
-                rm = client_data.get('rm', 'Unknown')
-                primary_exposure = client_data.get('primary_exposure', 'N/A')
+                rm = client_response.get('rm', 'Unknown')
+                primary_exposure = client_response.get('primary_exposure', 'N/A')
             except Exception as e:
                 logger.warning(f"Could not fetch client metadata from MCP: {e}")
                 rm = "Unknown"
