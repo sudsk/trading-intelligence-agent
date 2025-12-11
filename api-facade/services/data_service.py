@@ -12,6 +12,7 @@ import psycopg2
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import logging
+import httpx
 
 logger = logging.getLogger(__name__)
 
