@@ -478,21 +478,20 @@ class DataService:
             return []
 
     def _call_mcp_server(self, server_url: str, tool_name: str, arguments: dict) -> dict:
-        """Call MCP server directly via HTTP"""
-        import requests
+        """Call MCP server directly via HTTPX"""
         
         try:
-            response = requests.post(
-                f"{server_url}/call_tool",
-                json={
-                    "tool": tool_name,
-                    "arguments": arguments
-                },
-                timeout=5.0
-            )
-            response.raise_for_status()
-            result = response.json()
-            return result
+            with httpx.Client(timeout=5.0) as client:
+                response = client.post(
+                    f"{server_url}/call_tool",
+                    json={
+                        "tool": tool_name,
+                        "arguments": arguments
+                    }
+                )
+                response.raise_for_status()
+                result = response.json()
+                return result
         except Exception as e:
             logger.error(f"MCP call failed: {e}")
             return {}
