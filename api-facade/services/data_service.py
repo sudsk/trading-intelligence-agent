@@ -648,14 +648,12 @@ class DataService:
     
     def store_client_profile(self, client_id: str, profile: Dict[str, Any]):
         """
-        Store fresh analysis results in database.
+        Store complete analysis results in database.
         
-        Updates:
-        - switch_probability_history
-        - media_analysis
-        - nba_recommendations
+        Everything comes from profile - no need to fetch metadata separately.
         """
         from datetime import datetime
+        from psycopg2.extras import Json
         
         now = datetime.utcnow()
         
@@ -666,8 +664,8 @@ class DataService:
             # Store segmentation analysis
             cursor.execute("""
                 INSERT INTO switch_probability_history 
-                (client_id, segment, switch_prob, confidence, drivers, risk_flags, computed_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (client_id, segment, switch_prob, confidence, drivers, risk_flags, rm, primary_exposure, computed_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 client_id,
                 profile["segment"],
@@ -675,6 +673,8 @@ class DataService:
                 profile["confidence"],
                 Json(profile.get("drivers", [])),
                 Json(profile.get("riskFlags", [])),
+                profile.get('rm', 'Unknown'),
+                profile.get('primaryExposure', 'N/A'),
                 now
             ))
             
