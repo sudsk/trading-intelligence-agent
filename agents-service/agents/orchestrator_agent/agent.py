@@ -214,13 +214,16 @@ class OrchestratorAgent:
         """
         try:
             # Get RM from client MCP
-            client_response = self.data_service.get_client_metadata(client_id)
+            client_response = self.data_service._call_tool(
+                server_url=self.data_service.client_server_url,
+                tool_name='get_client_metadata',
+                arguments={'client_id': client_id}
+            )
             
-            # Handle nested response structure if needed
+            # Handle nested response structure
             if isinstance(client_response, dict):
-                if 'result' in client_response and 'client' in client_response['result']:
-                    client_data = client_response['result']['client']
-                elif 'client' in client_response:
+                # _call_tool already extracts 'result', so check for 'client' key
+                if 'client' in client_response:
                     client_data = client_response['client']
                 else:
                     client_data = client_response
@@ -231,7 +234,14 @@ class OrchestratorAgent:
             
             # Get primary exposure from positions
             try:
-                positions = self.data_service.get_positions(client_id)
+                positions_response = self.data_service._call_tool(
+                    server_url=self.data_service.risk_server_url,
+                    tool_name='get_positions',
+                    arguments={'client_id': client_id}
+                )
+                
+                # Extract positions array from response
+                positions = positions_response.get('positions', [])
                 primary_exposure = self._derive_primary_exposure(positions)
             except Exception as e:
                 logger.warning(f"⚠️ Could not get positions for {client_id}: {e}")
