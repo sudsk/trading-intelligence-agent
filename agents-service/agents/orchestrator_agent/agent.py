@@ -204,6 +204,68 @@ class OrchestratorAgent:
         adjusted = max(0.15, min(0.85, adjusted))
         
         return round(adjusted, 2)
+    
+    def _get_client_metadata_and_exposure(self, client_id: str) -> tuple:
+        """
+        Get client metadata (RM) and derive primary exposure.
+        
+        Returns:
+            (rm, primary_exposure)
+        """
+        try:
+            # Get RM from client MCP
+            client_response = self.data_service.get_client_metadata(client_id)
+            
+            # Handle nested response structure if needed
+            if isinstance(client_response, dict):
+                if 'result' in client_response and 'client' in client_response['result']:
+                    client_data = client_response['result']['client']
+                elif 'client' in client_response:
+                    client_data = client_response['client']
+                else:
+                    client_data = client_response
+            else:
+                client_data = {}
+            
+            rm = client_data.get('rm', 'Unknown')
+            
+            # Get primary exposure from positions
+            try:
+                positions = self.data_service.get_positions(client_id)
+                primary_exposure = self._derive_primary_exposure(positions)
+            except Exception as e:
+                logger.warning(f"⚠️ Could not get positions for {client_id}: {e}")
+                primary_exposure = 'N/A'
+            
+            logger.info(f"✅ Client metadata: rm={rm}, primary_exposure={primary_exposure}")
+            return rm, primary_exposure
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not fetch client metadata: {e}")
+            return 'Unknown', 'N/A'
+    
+    def _derive_primary_exposure(self, positions: List[Dict]) -> str:
+        """
+        Derive primary exposure from positions data.
+        
+        Uses gross position (total capital at risk) to determine
+        which instrument has the highest exposure.
+        """
+        try:
+            if not positions:
+                return 'N/A'
+            
+            # Find position with highest gross position (or absolute net if gross not available)
+            max_position = max(
+                positions,
+                key=lambda p: p.get('gross_position', abs(p.get('net_position', 0)))
+            )
+            
+            return max_position.get('instrument', 'N/A')
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not derive primary exposure: {e}")
+            return 'N/A'
 
     def _assemble_profile(
         self,
@@ -216,27 +278,13 @@ class OrchestratorAgent:
     ) -> Dict[str, Any]:
         """Assemble complete client profile from agent outputs."""
         
-        # Get client metadata (includes cached switch_prob from database)
+        # Get client metadata for name/sector only
         client_meta = self.data_service.get_client_metadata(client_id)
         
-        # ✅ ADD THIS: Use database values if available
-        db_switch_prob = None
-        db_segment = None
-        
-        if client_meta and 'switch_prob' in client_meta:
-            db_switch_prob = client_meta.get('switch_prob')
-            db_segment = client_meta.get('segment')
-            
-            if db_switch_prob is not None:
-                logger.info(
-                    f"📊 Using cached switch_prob from database: {db_switch_prob:.2f} "
-                    f"(segment: {db_segment})"
-                )
-                # Override with database values (source of truth)
-                base_switch_prob = db_switch_prob
-                db_segment = db_segment or segmentation.get('segment', 'Unclassified')
-        
-        # Format media to match MediaAnalysisResult contract
+        # ✅ Enrich with RM and primary exposure
+        rm, primary_exposure = self._get_client_metadata_and_exposure(client_id)
+       
+        # Format media
         media_formatted = {
             'pressure': media.get('pressure', 'LOW'),
             'sentiment_avg': media.get('sentiment_avg', 0.0),
@@ -250,29 +298,29 @@ class OrchestratorAgent:
             # Client identification
             'client_id': client_id,
             'name': client_meta.get('name', client_id) if client_meta else client_id,
-            'rm': client_meta.get('rm', 'Unassigned') if client_meta else 'Unassigned',
+            'rm': rm,
             'sector': client_meta.get('sector', 'Unknown') if client_meta else 'Unknown',
             
-            # Segmentation - USE DATABASE VALUES AS SOURCE OF TRUTH
-            'segment': db_segment if db_segment else segmentation.get('segment', 'Unclassified'),
+            # ✅ Use FRESH analysis from agents
+            'segment': segmentation.get('segment', 'Unclassified'),
             'confidence': segmentation.get('confidence', 0.0),
-            'switch_prob': adjusted_switch_prob,  # Can still be adjusted by media
-            'base_switch_prob': db_switch_prob if db_switch_prob is not None else base_switch_prob,
+            'switch_prob': adjusted_switch_prob,
+            'base_switch_prob': base_switch_prob,
             'drivers': segmentation.get('drivers', []),
             'risk_flags': segmentation.get('risk_flags', []),
-            'primary_exposure': segmentation.get('primary_exposure', 'N/A'),
+            'primary_exposure': primary_exposure,
             
-            # Media analysis (formatted to match contract)
+            # Media analysis
             'media': media_formatted,
             
             # Recommendations
             'recommendations': recommendations,
             
-            # Metadata (optional)
+            # Metadata
             'features': segmentation.get('features'),
         }
         
-        return profile    
+        return profile  
     
     def get_agent_health(self) -> Dict[str, Any]:
         """
