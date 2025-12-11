@@ -12,7 +12,7 @@ import psycopg2
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import logging
-import httpx
+import httpx, json
 
 logger = logging.getLogger(__name__)
 
@@ -487,7 +487,7 @@ class DataService:
                 response = client.post(
                     f"{server_url}/call_tool",
                     json={
-                        "name": tool_name,      
+                        "tool_name": tool_name,      
                         "arguments": arguments
                     }
                 )
@@ -499,7 +499,6 @@ class DataService:
                 if 'content' in result and len(result['content']) > 0:
                     content = result['content'][0]
                     if 'text' in content:
-                        import json
                         return json.loads(content['text'])
                 
                 return result
