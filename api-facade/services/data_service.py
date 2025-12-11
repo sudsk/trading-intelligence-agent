@@ -583,7 +583,7 @@ class DataService:
             try:
                 client_response = self._call_mcp_server(
                     server_url=self.client_server_url,  
-                    tool_name='get_client',
+                    tool_name='get_client_metadata',
                     arguments={'client_id': client_id}
                 )
                 rm = client_response.get('rm', 'Unknown')
