@@ -176,7 +176,7 @@ async def trigger_client_analysis(
         logger.info(
             f"✅ Analysis complete for {client_id} "
             f"(segment={profile.get('segment')}, "
-            f"switchProb={profile.get('switchProb')})"
+            f"switch_prob={profile.get('switch_prob')})"
         )
         
         return JSONResponse(content={
