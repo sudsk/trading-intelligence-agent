@@ -171,7 +171,7 @@ async def trigger_client_analysis(
         profile = await agent_client.get_client_profile(client_id)
         
         # Store results in database with current timestamp
-        await data_service.store_client_profile(client_id, profile)
+        data_service.store_client_profile(client_id, profile)
         
         logger.info(
             f"✅ Analysis complete for {client_id} "
