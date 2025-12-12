@@ -669,12 +669,12 @@ class DataService:
             """, (
                 client_id,
                 profile["segment"],
-                profile["switchProb"],
+                profile["switch_prob"],
                 profile["confidence"],
                 Json(profile.get("drivers", [])),
-                Json(profile.get("riskFlags", [])),
+                Json(profile.get("risk_flags", [])),
                 profile.get('rm', 'Unknown'),
-                profile.get('primaryExposure', 'N/A'),
+                profile.get('primary_exposure', 'N/A'),
                 now
             ))
             
