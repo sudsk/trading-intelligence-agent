@@ -10,7 +10,7 @@ import logging
 from typing import Dict, Any
 from datetime import datetime
 
-from .prompts import SYSTEM_INSTRUCTION, build_analysis_prompt, FEW_SHOT_EXAMPLES
+from .prompts import SYSTEM_INSTRUCTION, build_analysis_prompt
 from .tools import fetch_trades_summary, fetch_position_snapshot, get_tool_declarations
 
 logger = logging.getLogger(__name__)
