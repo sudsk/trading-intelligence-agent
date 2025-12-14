@@ -108,36 +108,6 @@ function App() {
     }
   };
 
-  const refreshProfile = async () => {
-    if (!selectedClient || loading) return;
-    
-    console.log('🔄 Triggering fresh analysis for', selectedClient);
-    setLoading(true);
-    
-    try {
-      // Step 1: Trigger agent analysis (20s)
-      await clientsAPI.triggerAnalysis(selectedClient, {
-        timeout: 90000  // 90 seconds in milliseconds
-      });
-      console.log('✅ Analysis complete, fetching updated data...');
-      
-      // Step 2: Clear cache for this client
-      setProfileCache(prev => {
-        const updated = { ...prev };
-        delete updated[selectedClient];
-        return updated;
-      });
-      
-      // Step 3: Reload from database (now has fresh data)
-      await selectClient(selectedClient);
-      
-    } catch (error) {
-      console.error('❌ Error refreshing profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleForceEvent = async () => {
     if (!selectedClient) {
       // Optional: show toast notification
