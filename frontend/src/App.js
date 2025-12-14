@@ -164,7 +164,10 @@ function App() {
   
   return (
     <div className="app">
-      <Header onForceEvent={() => {/* trigger demo event */}} />
+      <Header 
+        onForceEvent={handleForceEvent}
+        isAnalyzing={isAnalyzing}  
+      />
       <div className="main-container">
         <Sidebar 
           clients={clients} 
