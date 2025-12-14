@@ -34,25 +34,6 @@ const ProfileCard = ({ profile, onRefresh }) => {  // ← Add onRefresh prop
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div className="badge">{Math.round(profile.confidence * 100)}% Confidence</div>
-          {/* ← Refresh button styled like badge */}
-          {onRefresh && (
-            <button 
-              onClick={onRefresh}
-              className="badge"
-              title="Refresh analysis"
-              style={{
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                border: 'none',
-                background: 'color-mix(in srgb, var(--uui-primary-60) 15%, transparent)',
-                color: 'var(--uui-primary-50)'
-              }}
-            >
-              🔄 Refresh
-            </button>
-          )}
         </div>
       </div>
       
