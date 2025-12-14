@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = ({ onForceEvent }) => {
+const Header = ({ onForceEvent, isAnalyzing }) => {
   return (
     <div className="header">
       <div className="logo">
@@ -17,9 +17,17 @@ const Header = ({ onForceEvent }) => {
         <span style={{ fontSize: '18px' }}>Trading Intelligence Agent</span>
       </div>
       <div className="header-controls">
-        <button className="force-event-btn" onClick={onForceEvent}>
-          <span>🚨</span>
-          <span>Force Event</span>
+        <button 
+          className="force-event-btn" 
+          onClick={onForceEvent}
+          disabled={isAnalyzing}
+          style={{ 
+            opacity: isAnalyzing ? 0.6 : 1,
+            cursor: isAnalyzing ? 'not-allowed' : 'pointer'
+          }}
+        >
+          <span>{isAnalyzing ? '🔄' : '🚨'}</span>
+          <span>{isAnalyzing ? 'Analyzing...' : 'Force Event'}</span>
         </button>
       </div>
     </div>
