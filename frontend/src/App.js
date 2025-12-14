@@ -16,8 +16,9 @@ function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false); 
   const [alert, setAlert] = useState(null);
-  const [profileCache, setProfileCache] = useState({}); // ← ADD THIS
+  const [profileCache, setProfileCache] = useState({}); 
 
   // SSE for real-time alerts
   const { data: sseData } = useSSE(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/alerts/stream`);
@@ -129,6 +130,35 @@ function App() {
       console.error('❌ Error refreshing profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForceEvent = async () => {
+    if (!selectedClient) {
+      // Optional: show toast notification
+      console.warn('No client selected');
+      return;
+    }
+  
+    setIsAnalyzing(true);
+    
+    try {
+      console.log(`🚨 Force Event triggered for: ${selectedClient}`);
+      
+      const response = await clientsAPI.post('/demo/trigger-alert', {
+        client_id: selectedClient
+      });
+      
+      console.log('Force Event response:', response.data);
+      
+      // Alert will arrive via SSE automatically
+      // Profile will auto-update when SSE alert is received
+      
+    } catch (error) {
+      console.error('Error triggering Force Event:', error);
+      // Optional: show error notification
+    } finally {
+      setIsAnalyzing(false);
     }
   };
   
