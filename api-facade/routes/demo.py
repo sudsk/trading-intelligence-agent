@@ -4,6 +4,7 @@ Demo Routes - API Façade
 Demo/testing endpoints including Force Event trigger.
 """
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import JSONResponse 
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -77,7 +78,7 @@ async def trigger_demo_alert(
         # STEP 4: Generate alert if significant change
         change = new_switch_prob - old_switch_prob
         
-        if abs(change) >= 0.05:  # Any change ≥5% triggers alert
+        if abs(change) >= 0.03:  # Any change ≥5% triggers alert
             # Determine reason from analysis
             media_pressure = profile.get('media', {}).get('pressure', 'LOW')
             reason = 'media-driven' if media_pressure == 'HIGH' else 'pattern-shift'
