@@ -181,11 +181,22 @@ function App() {
         />
         <div className="content">
           {alert && <AlertBanner alert={alert} onDismiss={() => setAlert(null)} />}
+
+          {isAnalyzing && (
+            <div className="analyzing-overlay">
+              <div className="analyzing-content">
+                <div className="spinner"></div>
+                <p className="analyzing-title">Running fresh analysis...</p>
+                <p className="analyzing-subtext">Analyzing trades, positions, and media (~20s)</p>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="loading"><div className="spinner"></div></div>
           ) : profile ? (
             <>
-              <ProfileCard profile={profile} onRefresh={refreshProfile} /> {/* ← Pass refresh */}
+              <ProfileCard profile={profile} onRefresh={refreshProfile} /> 
               <MediaRibbon media={profile.media} />
               <Timeline timeline={profile.timeline} />
               <InsightsFeed insights={profile.insights} />
