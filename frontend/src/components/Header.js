@@ -26,7 +26,12 @@ const Header = ({ onForceEvent, isAnalyzing }) => {
             cursor: isAnalyzing ? 'not-allowed' : 'pointer'
           }}
         >
-          <span>{isAnalyzing ? '🔄' : '🚨'}</span>
+          <span style={{
+            display: 'inline-block',
+            animation: isAnalyzing ? 'spin 1s linear infinite' : 'none'
+          }}>
+            {isAnalyzing ? '🔄' : '🚨'}
+          </span>
           <span>{isAnalyzing ? 'Analyzing...' : 'Force Event'}</span>
         </button>
       </div>
