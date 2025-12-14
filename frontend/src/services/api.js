@@ -15,6 +15,11 @@ export const clientsAPI = {
   getInsights: (clientId) => api.get(`/clients/${clientId}/insights`),
   triggerAnalysis: (clientId) => api.post(`/clients/${clientId}/analyze`, {}, {
     timeout: 90000  // ← Explicit 90s timeout for analysis
+  }),
+  triggerDemoAlert: (clientId) => api.post('/demo/trigger-alert', {  
+    client_id: clientId
+  }, {
+    timeout: 90000  // 90s timeout for analysis
   })
 };
 
