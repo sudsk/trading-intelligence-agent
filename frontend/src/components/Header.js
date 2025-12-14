@@ -14,7 +14,7 @@ const Header = ({ onForceEvent }) => {
             filter: 'brightness(0) invert(1)'
           }}
         />
-        <span style={{ fontSize: '16px' }}>Trading Intelligence Agent</span>
+        <span style={{ fontSize: '18px' }}>Trading Intelligence Agent</span>
       </div>
       <div className="header-controls">
         <button className="force-event-btn" onClick={onForceEvent}>
