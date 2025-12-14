@@ -196,7 +196,7 @@ function App() {
             <div className="loading"><div className="spinner"></div></div>
           ) : profile ? (
             <>
-              <ProfileCard profile={profile} onRefresh={refreshProfile} /> 
+              <ProfileCard profile={profile} /> 
               <MediaRibbon media={profile.media} />
               <Timeline timeline={profile.timeline} />
               <InsightsFeed insights={profile.insights} />
