@@ -110,7 +110,6 @@ function App() {
 
   const handleForceEvent = async () => {
     if (!selectedClient) {
-      // Optional: show toast notification
       console.warn('No client selected');
       return;
     }
@@ -120,18 +119,12 @@ function App() {
     try {
       console.log(`🚨 Force Event triggered for: ${selectedClient}`);
       
-      const response = await clientsAPI.post('/demo/trigger-alert', {
-        client_id: selectedClient
-      });
+      const response = await clientsAPI.triggerDemoAlert(selectedClient);
       
-      console.log('Force Event response:', response.data);
-      
-      // Alert will arrive via SSE automatically
-      // Profile will auto-update when SSE alert is received
+      console.log('✅ Force Event completed:', response.data);
       
     } catch (error) {
-      console.error('Error triggering Force Event:', error);
-      // Optional: show error notification
+      console.error('❌ Error triggering Force Event:', error);
     } finally {
       setIsAnalyzing(false);
     }
