@@ -12,6 +12,7 @@ import random
 
 from services.alert_queue import AlertQueue
 from services.data_service import DataService
+from services.agent_client import AgentClient  
 
 logger = logging.getLogger(__name__)
 
