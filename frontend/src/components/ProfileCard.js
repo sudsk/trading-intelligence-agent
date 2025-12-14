@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProfileCard = ({ profile, onRefresh }) => {  // ← Add onRefresh prop
+const ProfileCard = ({ profile }) => {  
   if (!profile) return null;
   
   // Format the timestamp
