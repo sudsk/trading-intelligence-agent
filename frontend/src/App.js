@@ -41,9 +41,14 @@ function App() {
         const updated = { ...prev };
         delete updated[sseData.clientId];
         return updated;
-      });      
+      });  
+      
+      // Auto-refresh profile if it's the currently selected client
+      if (sseData.clientId === selectedClient) {
+        selectClient(selectedClient);
+      }
     }
-  }, [sseData]);
+  }, [sseData, selectedClient]);
 
   const loadClients = async () => {
     try {
