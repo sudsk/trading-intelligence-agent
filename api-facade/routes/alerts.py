@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get("/stream")
 async def stream_alerts(
-    alert_queue: AlertQueue = Depends()
+    alert_queue: AlertQueue = Depends(get_alert_queue)
 ):
     """
     SSE endpoint for streaming alerts to frontend.
