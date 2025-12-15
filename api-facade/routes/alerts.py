@@ -56,7 +56,7 @@ async def stream_alerts(
 
                 # ← ADD THIS DEBUG LOG
                 if len(alerts) > 0:
-                logger.info(f"🔍 Retrieved {len(alerts)} pending alerts from queue")
+                    logger.info(f"🔍 Retrieved {len(alerts)} pending alerts from queue")
 
                 for alert in alerts:
                     logger.info(f"📤 Sending alert: {alert.get('type')}")
