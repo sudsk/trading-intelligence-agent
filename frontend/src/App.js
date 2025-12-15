@@ -35,12 +35,13 @@ function App() {
   }, []);
 
   useEffect(() => {
+    console.log('🔔 SSE Data received:', sseData); // Add debug log
     if (sseData && sseData.type === 'switch_probability_alert') {
       setAlert(sseData);
       // Update client in list if matches
       setClients(prev => prev.map(c => 
         c.clientId === sseData.clientId 
-          ? { ...c, switchProb: sseData.newSwitchProb }
+          ? { ...c, switch_prob: sseData.newSwitchProb }
           : c
       ));
       // Clear cache for this client to force refresh on next view
@@ -52,10 +53,11 @@ function App() {
       
       // Auto-refresh profile if it's the currently selected client
       if (sseData.clientId === selectedClient) {
-        selectClient(selectedClient);
+        console.log('🔄 Refreshing profile for current client');
+        selectClient(sseData.clientId);
       }
     }
-  }, [sseData, selectedClient]);
+  }, [sseData]);
 
   const loadClients = async () => {
     try {
