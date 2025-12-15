@@ -69,7 +69,7 @@ async def stream_alerts(
                     last_keepalive = now
                 
                 # Poll every 5 seconds
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
                 
         except asyncio.CancelledError:
             logger.info("📡 Client disconnected from alert stream")
