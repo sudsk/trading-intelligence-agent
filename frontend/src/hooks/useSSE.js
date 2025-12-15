@@ -17,7 +17,8 @@ export const useSSE = (url) => {
     eventSource.onmessage = (event) => {
       try {
         const parsedData = JSON.parse(event.data);
-        if (parsedData.type !== 'heartbeat') {
+        if (parsedData.type !== 'keepalive') {
+          console.log('📨 SSE message:', parsedData.type);
           setData(parsedData);
         }
       } catch (err) {
