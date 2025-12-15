@@ -37,13 +37,7 @@ async def stream_alerts(
     logger.info("📡 Client connected to alert stream")
     
     async def event_generator():
-        """
-        Generate SSE events.
-        
-        SSE format:
-        data: {"type": "...", "payload": {...}}
-        
-        """
+        """Generate SSE events with proper keepalive timing."""
         try:
             # Send initial connection message
             initial_message = {
@@ -52,6 +46,8 @@ async def stream_alerts(
                 "message": "Connected to alert stream"
             }
             yield f"data: {json.dumps(initial_message)}\n\n"
+            
+            last_keepalive = datetime.utcnow()
             
             # Keep connection alive and send alerts
             while True:
@@ -62,17 +58,18 @@ async def stream_alerts(
                     logger.info(f"📤 Sending alert: {alert.get('type')}")
                     yield f"data: {json.dumps(alert)}\n\n"
                 
-                # Wait before checking again
-                await asyncio.sleep(5)  # Poll every 5 seconds
-                
-                # Send keepalive every 30 seconds
-                if not alerts:
-                    # Only send keepalive if no alerts were sent
+                # Send keepalive every 30 seconds regardless of alerts
+                now = datetime.utcnow()
+                if (now - last_keepalive).seconds >= 30:
                     keepalive = {
                         "type": "keepalive",
-                        "timestamp": datetime.utcnow().isoformat()
+                        "timestamp": now.isoformat()
                     }
                     yield f"data: {json.dumps(keepalive)}\n\n"
+                    last_keepalive = now
+                
+                # Poll every 5 seconds
+                await asyncio.sleep(5)
                 
         except asyncio.CancelledError:
             logger.info("📡 Client disconnected from alert stream")
