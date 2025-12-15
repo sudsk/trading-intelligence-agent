@@ -21,7 +21,14 @@ function App() {
   const [profileCache, setProfileCache] = useState({}); 
 
   // SSE for real-time alerts
-  const { data: sseData } = useSSE(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/alerts/stream`);
+  const { data: sseData, error: sseError, isConnected } = useSSE(
+    `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/alerts/stream`
+  );
+  
+  // Add this useEffect to debug:
+  useEffect(() => {
+    console.log('SSE Status:', { isConnected, error: sseError, data: sseData });
+  }, [isConnected, sseError, sseData]);
 
   useEffect(() => {
     loadClients();
