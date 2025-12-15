@@ -3,7 +3,7 @@ Alerts Routes - API Façade
 
 Handles Server-Sent Events (SSE) streaming for real-time alerts.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 import asyncio
 import json
@@ -17,9 +17,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def get_alert_queue_from_request(request: Request) -> AlertQueue:
+    """Get alert queue from app state via request"""
+    return request.app.state.alert_queue
+
+
 @router.get("/stream")
 async def stream_alerts(
-    alert_queue: AlertQueue = Depends(get_alert_queue)
+    request: Request
 ):
     """
     SSE endpoint for streaming alerts to frontend.
@@ -36,6 +41,9 @@ async def stream_alerts(
     """
     logger.info("📡 Client connected to alert stream")
     
+    # Get alert queue from app state
+    alert_queue = request.app.state.alert_queue
+    
     async def event_generator():
         """Generate SSE events with proper keepalive timing."""
         try:
@@ -48,18 +56,21 @@ async def stream_alerts(
             yield f"data: {json.dumps(initial_message)}\n\n"
             
             last_keepalive = datetime.utcnow()
+            poll_count = 0
             
             # Keep connection alive and send alerts
             while True:
+                poll_count += 1
+                
                 # Check for pending alerts
                 alerts = alert_queue.get_pending()
-
-                # ← ADD THIS DEBUG LOG
+                
+                # DEBUG: Log when we find alerts
                 if len(alerts) > 0:
-                    logger.info(f"🔍 Retrieved {len(alerts)} pending alerts from queue")
-
+                    logger.info(f"🎯 FOUND {len(alerts)} PENDING ALERTS IN QUEUE!")
+                
                 for alert in alerts:
-                    logger.info(f"📤 Sending alert: {alert.get('type')}")
+                    logger.info(f"📤 Sending alert via SSE: {alert.get('type')} for {alert.get('clientId')}")
                     yield f"data: {json.dumps(alert)}\n\n"
                 
                 # Send keepalive every 30 seconds regardless of alerts
@@ -72,7 +83,7 @@ async def stream_alerts(
                     yield f"data: {json.dumps(keepalive)}\n\n"
                     last_keepalive = now
                 
-                # Poll every 5 seconds
+                # Poll every 1 second for faster alerts
                 await asyncio.sleep(1)
                 
         except asyncio.CancelledError:
@@ -100,8 +111,8 @@ async def stream_alerts(
 
 @router.get("/history")
 async def get_alert_history(
-    limit: int = 50,
-    alert_queue: AlertQueue = Depends()
+    request: Request,
+    limit: int = 50
 ):
     """
     Get recent alert history.
@@ -115,6 +126,8 @@ async def get_alert_history(
         List of recent alerts
     """
     logger.info(f"📜 Getting alert history (limit={limit})")
+    
+    alert_queue = request.app.state.alert_queue
     
     try:
         history = alert_queue.get_history(limit=limit)
