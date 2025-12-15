@@ -53,7 +53,11 @@ async def stream_alerts(
             while True:
                 # Check for pending alerts
                 alerts = alert_queue.get_pending()
-                
+
+                # ← ADD THIS DEBUG LOG
+                if len(alerts) > 0:
+                logger.info(f"🔍 Retrieved {len(alerts)} pending alerts from queue")
+
                 for alert in alerts:
                     logger.info(f"📤 Sending alert: {alert.get('type')}")
                     yield f"data: {json.dumps(alert)}\n\n"
