@@ -3,7 +3,7 @@ Demo Routes - API Façade
 
 Demo/testing endpoints including Force Event trigger.
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse 
 from pydantic import BaseModel
 from typing import Optional
@@ -43,8 +43,8 @@ class ForceEventResponse(BaseModel):
 
 @router.post("/trigger-alert", response_model=ForceEventResponse)
 async def trigger_demo_alert(
-    request: ForceEventRequest = ForceEventRequest(),
-    alert_queue: AlertQueue = Depends(),
+    request_body: ForceEventRequest = ForceEventRequest(),
+    request: Request = None,
     agent_client: AgentClient = Depends(),
     data_service: DataService = Depends()
 ):
@@ -57,7 +57,11 @@ async def trigger_demo_alert(
     
     For demo, we manually trigger it with 🚨 Force Event" button.
     """    
-    client_id = request.client_id or "ACME_FX_023"  # Default for demo
+    # Get alert_queue from app state (CRITICAL FIX!)
+    alert_queue = request.app.state.alert_queue
+    logger.info(f"🔍 Demo route alert_queue instance: {id(alert_queue)}")
+    
+    client_id = request_body.client_id or "ACME_FX_023"  # Default for demo
     
     logger.info(f"🚨 Force Event triggered for: {client_id}")
     
@@ -78,7 +82,7 @@ async def trigger_demo_alert(
         # STEP 4: Generate alert if significant change
         change = new_switch_prob - old_switch_prob
         
-        if abs(change) >= 0.03:  # Any change ≥5% triggers alert
+        if abs(change) >= 0.03:  # Any change ≥3% triggers alert
             # Determine reason from analysis
             media_pressure = profile.get('media', {}).get('pressure', 'LOW')
             reason = 'media-driven' if media_pressure == 'HIGH' else 'pattern-shift'
@@ -99,7 +103,9 @@ async def trigger_demo_alert(
             }
             
             # STEP 5: Send alert
+            logger.info(f"   Adding alert to queue (instance {id(alert_queue)})")
             alert_queue.add(alert)
+            logger.info(f"   Alert added successfully")
             
             logger.info(f"   🚨 Alert generated: {severity} - {reason}")
             
