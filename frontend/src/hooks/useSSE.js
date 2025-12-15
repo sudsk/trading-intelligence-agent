@@ -17,6 +17,7 @@ export const useSSE = (url) => {
     eventSource.onmessage = (event) => {
       try {
         const parsedData = JSON.parse(event.data);
+        console.log('📨 Raw SSE data:', parsedData);
         if (parsedData.type !== 'keepalive') {
           console.log('📨 SSE message:', parsedData.type);
           setData(parsedData);
