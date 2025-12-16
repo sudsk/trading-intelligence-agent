@@ -73,6 +73,17 @@ const InsightsFeed = ({ insights }) => {
                 </span>
               </div>
               <div className="insight-message">{insight.description || insight.message || 'No description'}</div>
+              {/* ✅ ADD THIS: Show products for ACTION type */}
+              {insight.type === 'ACTION' && insight.metadata?.products && (
+                <div className="insight-products" style={{ 
+                  marginTop: '8px', 
+                  fontSize: '12px', 
+                  color: 'var(--uui-info-60)',
+                  fontStyle: 'italic'
+                }}>
+                  Products: {insight.metadata.products}
+                </div>
+              )}
             </div>
           </div>
         ))}
