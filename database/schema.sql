@@ -33,8 +33,8 @@ CREATE INDEX idx_alerts_acknowledged ON alerts(acknowledged);
 CREATE TABLE actions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id VARCHAR(50),  -- ← Remove REFERENCES clients(client_id)
-    action_type VARCHAR(50) NOT NULL,
-    product VARCHAR(100),
+    action_type VARCHAR(150) NOT NULL,
+    product VARCHAR(200),
     description TEXT,
     status VARCHAR(20) DEFAULT 'pending',
     outcome VARCHAR(20),
