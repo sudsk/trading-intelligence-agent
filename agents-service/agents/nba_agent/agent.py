@@ -144,7 +144,13 @@ class NBAAgent:
             # Limit to 5 recommendations
             recommendations = recommendations[:5]
             
-            logger.info(f"✅ Generated {len(recommendations)} recommendations")
+            logger.info(f"✅ Generated {len(recommendations)} recommendations
+            
+            for i, rec in enumerate(recommendations):
+                logger.info(f"   Recommendation {i+1}: {rec['action']} - {rec['priority']}")
+                logger.info(f"      Products: {rec['products']}")
+                logger.info(f"      Message: {rec['message'][:100]}...")
+
             return recommendations
             
         except Exception as e:
