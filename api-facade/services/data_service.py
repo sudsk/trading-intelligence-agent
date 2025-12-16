@@ -294,6 +294,8 @@ class DataService:
                     confidence,
                     drivers,
                     risk_flags,
+                    primary_exposure,  
+                    rm,
                     computed_at
                 FROM switch_probability_history
                 WHERE client_id = %s
@@ -380,13 +382,13 @@ class DataService:
             
             return {
                 "clientId": client_id,
-                "rm": rm,
+                "rm": row_dict.get("rm") or "Unknown",
                 "segment": row_dict["segment"],
                 "switchProb": float(row_dict["switch_prob"]) if row_dict["switch_prob"] else 0.0,
                 "confidence": float(row_dict["confidence"]) if row_dict["confidence"] else 0.0,
                 "drivers": drivers,  
                 "riskFlags": risk_flags,
-                "primaryExposure": primary_exposure,
+                "primaryExposure": row_dict.get("primary_exposure") or "N/A",
                 "analyzed_at": row_dict["computed_at"].isoformat() if row_dict["computed_at"] else None,
                 "media": {
                     "pressure": row_dict["media_pressure"] or "UNKNOWN",
