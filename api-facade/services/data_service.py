@@ -135,7 +135,15 @@ class DataService:
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            
+
+            # ✅ ADD LOGGING BEFORE INSERT
+            logger.info(f"📝 Attempting to insert insight:")
+            logger.info(f"   client_id: {client_id} (len={len(client_id)})")
+            logger.info(f"   type: {type} (len={len(type)})")
+            logger.info(f"   title: {title} (len={len(title)})")
+            logger.info(f"   description: {description[:100]}... (len={len(description)})")
+            logger.info(f"   severity: {severity} (len={len(severity)})")
+        
             query = """
                 INSERT INTO alerts 
                 (client_id, alert_type, reason, severity)
