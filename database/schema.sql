@@ -14,36 +14,37 @@ CREATE TABLE switch_probability_history (
 );
 CREATE INDEX idx_switch_prob_client_computed ON switch_probability_history(client_id, computed_at DESC);
 
--- Alerts table
-CREATE TABLE alerts (
+CREATE TABLE IF NOT EXISTS insights (
     id SERIAL PRIMARY KEY,
-    client_id VARCHAR(50),  -- ← Remove REFERENCES clients(client_id)
-    alert_type VARCHAR(50) NOT NULL,
-    old_switch_prob DECIMAL(4, 3),
-    new_switch_prob DECIMAL(4, 3),
-    reason TEXT,
-    severity VARCHAR(20),
+    client_id VARCHAR(50) NOT NULL,
+    type VARCHAR(20) NOT NULL,  -- 'SIGNAL', 'ACTION', 'OUTCOME', 'ALERT'
+    severity VARCHAR(20) NOT NULL DEFAULT 'INFO',
+    title VARCHAR(200),
+    reason TEXT,  -- Full description/message
+    
+    -- For SIGNAL/ALERT (switch probability changes)
+    old_switch_prob NUMERIC(5,2),
+    new_switch_prob NUMERIC(5,2),
+    
+    -- For ACTION (what was proposed)
+    action_type VARCHAR(50),  -- e.g., 'PROACTIVE_OUTREACH', 'PROPOSE_HEDGE'
+    products TEXT,  -- JSON array or comma-separated products
+    rm VARCHAR(100),  -- Relationship manager who took action
+    
+    -- For OUTCOME (result of action)
+    action_id INTEGER,  -- Links OUTCOME back to its ACTION
+    outcome_status VARCHAR(50),  -- 'success', 'failed', 'pending'
+    
     acknowledged BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
-CREATE INDEX idx_alerts_client_created ON alerts(client_id, created_at DESC);
-CREATE INDEX idx_alerts_acknowledged ON alerts(acknowledged);
 
--- Actions table
-CREATE TABLE actions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    client_id VARCHAR(50),  -- ← Remove REFERENCES clients(client_id)
-    action_type VARCHAR(150) NOT NULL,
-    product VARCHAR(200),
-    description TEXT,
-    status VARCHAR(20) DEFAULT 'pending',
-    outcome VARCHAR(20),
-    outcome_description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX idx_actions_client_created ON actions(client_id, created_at DESC);
-CREATE INDEX idx_actions_status ON actions(status);
+CREATE INDEX idx_insights_client_id ON insights(client_id);
+CREATE INDEX idx_insights_type ON insights(type);
+CREATE INDEX idx_insights_created_at ON insights(created_at DESC);
+CREATE INDEX idx_insights_action_id ON insights(action_id);
+
 
 -- Sample switch probability data for 20 demo clients
 -- Mix of all segments with varied probabilities for realistic demo
@@ -264,9 +265,9 @@ INSERT INTO client_regimes (client_id, segment, period, description, start_date,
 ON CONFLICT DO NOTHING;
 
 
--- Sample Alerts/Insights for Demo (last 7 days)
-INSERT INTO alerts (client_id, alert_type, severity, old_switch_prob, new_switch_prob, reason, acknowledged, created_at) VALUES
-  -- High priority alerts (recent)
+-- Sample Insights for Demo (last 7 days)
+INSERT INTO insights (client_id, type, severity, old_switch_prob, new_switch_prob, reason, acknowledged, created_at) VALUES
+  -- High priority signals (recent)
   ('ACME_FX_023', 'SIGNAL', 'HIGH', 0.650, 0.720, 'Switch probability increased by 11% - pattern break detected in EURUSD positions', FALSE, NOW() - INTERVAL '2 hours'),
   ('PHOENIX_CAPITAL_031', 'SIGNAL', 'CRITICAL', 0.750, 0.810, 'Critical threshold breached - sustained deviation from normal trading pattern', FALSE, NOW() - INTERVAL '4 hours'),
   ('NOVA_MACRO_045', 'SIGNAL', 'HIGH', 0.680, 0.760, 'Volatility spike detected - position concentration risk elevated', FALSE, NOW() - INTERVAL '8 hours'),
@@ -300,6 +301,7 @@ INSERT INTO alerts (client_id, alert_type, severity, old_switch_prob, new_switch
   ('OLYMPUS_VENTURES_024', 'OUTCOME', 'LOW', 0.420, 0.390, 'Quarterly review completed - client satisfied with performance', TRUE, NOW() - INTERVAL '7 days'),
   ('APEX_TRADING_089', 'OUTCOME', 'MEDIUM', 0.500, 0.460, 'Hedging strategy implemented - reduced exposure risk', TRUE, NOW() - INTERVAL '7 days')
 ON CONFLICT DO NOTHING;
+
 
 INSERT INTO media_analysis (client_id, pressure, sentiment_score, headlines, analyzed_at) VALUES
 
