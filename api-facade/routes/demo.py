@@ -106,7 +106,18 @@ async def trigger_demo_alert(
             logger.info(f"   Adding alert to queue (instance {id(alert_queue)})")
             alert_queue.add(alert)
             logger.info(f"   Alert added successfully")
-            
+
+
+            # STEP 6: Also save to database as persistent ALERT
+            data_service.create_alert(
+                client_id=client_id,
+                alert_type='switch_probability_alert',
+                old_switch_prob=old_switch_prob,
+                new_switch_prob=new_switch_prob,
+                reason=f"Switch probability {'increased' if change > 0 else 'decreased'} from {old_switch_prob:.0%} to {new_switch_prob:.0%} ({reason})",
+                severity=severity
+            )
+
             logger.info(f"   🚨 Alert generated: {severity} - {reason}")
             
             return ForceEventResponse(
