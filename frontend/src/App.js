@@ -168,6 +168,15 @@ function App() {
       setIsAnalyzing(false);
     }
   };
+
+  const handleActionTaken = async () => {
+    // Refresh insights
+    const insightsRes = await clientsAPI.getInsights(selectedClient);
+    setProfile(prev => ({
+      ...prev,
+      insights: insightsRes.data.insights
+    }));
+  };
   
   return (
     <div className="app">
