@@ -172,7 +172,7 @@ function App() {
               <MediaRibbon media={profile.media} />
               <Timeline timeline={profile.timeline} />
               <InsightsFeed insights={profile.insights} />
-              <ActionBar clientId={selectedClient} />
+              <ActionBar clientId={selectedClient} profile={profile} />
             </>
           ) : null}
         </div>
