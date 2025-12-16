@@ -18,7 +18,7 @@ const AlertBanner = ({ alert, onDismiss }) => {
         </div>
         <button 
           className="action-btn btn-primary" 
-          style={{ width: 'auto', flex: 0, alignSelf: 'flex-start' }}
+          style={{ width: 'auto', flex: 0, alignSelf: 'flex-start', marginTop: 0 }}
           onClick={onDismiss}
         >
           Take Action
