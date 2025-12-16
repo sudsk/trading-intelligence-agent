@@ -132,16 +132,35 @@ function App() {
       
       console.log('✅ Force Event completed:', response.data);
 
-      // Refresh profile from database to get new recommendations
-      console.log('🔄 Refreshing profile with new recommendations...');
-      const profileRes = await clientsAPI.getProfile(selectedClient);
-      setProfile(profileRes.data);
+      // Refresh profile from database to get new recommendations and switch prob
+      console.log('🔄 Refreshing profile with new analysis...');
+      const [profileRes, timelineRes, insightsRes] = await Promise.all([
+        clientsAPI.getProfile(selectedClient),
+        clientsAPI.getTimeline(selectedClient),
+        clientsAPI.getInsights(selectedClient),
+      ]);
+
+      const fullProfile = {
+        ...profileRes.data,
+        timeline: timelineRes.data.timeline,
+        insights: insightsRes.data.insights,
+      };      
       
-      // Update cache too
+      // Update profile state
+      setProfile(fullProfile);
+      
+      // Update cache
       setProfileCache(prev => ({
         ...prev,
-        [selectedClient]: profileRes.data
+        [selectedClient]: fullProfile
       }));
+
+      // Update client list with new switch prob
+      setClients(prev => prev.map(c => 
+        c.client_id === selectedClient 
+          ? { ...c, switch_prob: fullProfile.switchProb }
+          : c
+      ));      
       
     } catch (error) {
       console.error('❌ Error triggering Force Event:', error);
