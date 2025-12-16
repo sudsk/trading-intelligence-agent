@@ -131,6 +131,17 @@ function App() {
       const response = await clientsAPI.triggerDemoAlert(selectedClient);
       
       console.log('✅ Force Event completed:', response.data);
+
+      // Refresh profile from database to get new recommendations
+      console.log('🔄 Refreshing profile with new recommendations...');
+      const profileRes = await clientsAPI.getProfile(selectedClient);
+      setProfile(profileRes.data);
+      
+      // Update cache too
+      setProfileCache(prev => ({
+        ...prev,
+        [selectedClient]: profileRes.data
+      }));
       
     } catch (error) {
       console.error('❌ Error triggering Force Event:', error);
