@@ -1,7 +1,7 @@
 import React from 'react';
 import { actionsAPI } from '../services/api';
 
-const ActionBar = ({ clientId, profile }) => {
+const ActionBar = ({ clientId, profile, onActionTaken }) => {
   const [toast, setToast] = React.useState(null);
 
   const showToast = (message) => {
@@ -28,17 +28,22 @@ const ActionBar = ({ clientId, profile }) => {
       }
 
       const products = recommendation.products || ['Product recommendation'];
-      const title = `${recommendation.action.replace(/_/g, ' ')} - ${products[0]}`;
+      const title = `${recommendation.action.replace(/_/g, ' ')} - ${products[0]}`.substring(0, 95);
       
       await actionsAPI.create({
         client_id: clientId,
         action_type: recommendation.action,
         title: title,
-        description: recommendation.message,
-        products: products
+        description: recommendation.message?.substring(0, 450),
+        products: products.map(p => p.substring(0, 95))
       });
       
       showToast(`💼 Product proposed: ${products[0]} - logged to Insights`);
+
+      // ✅ Trigger refresh
+      if (onActionTaken) {
+        onActionTaken();
+      }      
     } catch (error) {
       console.error('Error proposing product:', error);
       showToast('❌ Error proposing product');
