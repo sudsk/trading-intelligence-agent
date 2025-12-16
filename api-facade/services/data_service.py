@@ -45,7 +45,7 @@ class DataService:
         return psycopg2.connect(self.database_url)
     
     # ========================================================================
-    # Insights (mapped from alerts table)
+    # Insights 
     # ========================================================================
     
     def get_client_insights(
@@ -72,14 +72,20 @@ class DataService:
             query = """
                 SELECT 
                     id,
-                    alert_type,
+                    type,
+                    severity,
+                    title,
+                    reason,
                     old_switch_prob,
                     new_switch_prob,
-                    reason,
-                    severity,
+                    action_type,
+                    products,
+                    rm,
+                    action_id,
+                    outcome_status,
                     acknowledged,
                     created_at
-                FROM alerts
+                FROM insights
                 WHERE client_id = %s
                 ORDER BY created_at DESC
                 LIMIT %s
@@ -93,15 +99,20 @@ class DataService:
                 # Map alert fields to insight UI format
                 insights.append({
                     'insightId': str(row[0]),
-                    'type': 'ALERT',
-                    'title': row[1],  # alert_type becomes title
-                    'description': row[4],  # reason becomes description
-                    'timestamp': row[7].isoformat() if row[7] else None,
-                    'severity': row[5],
-                    'acknowledged': row[6],
+                    'type': row[1],  # SIGNAL, ACTION, OUTCOME, ALERT
+                    'severity': row[2],
+                    'title': row[3],
+                    'description': row[4],  # reason column
+                    'timestamp': row[13].isoformat() if row[13] else None,
+                    'acknowledged': row[12],
                     'metadata': {
-                        'old_switch_prob': float(row[2]) if row[2] else None,
-                        'new_switch_prob': float(row[3]) if row[3] else None
+                        'old_switch_prob': float(row[5]) if row[5] else None,
+                        'new_switch_prob': float(row[6]) if row[6] else None,
+                        'action_type': row[7],
+                        'products': row[8],
+                        'rm': row[9],
+                        'action_id': row[10],
+                        'outcome_status': row[11]
                     }
                 })
             
@@ -120,314 +131,50 @@ class DataService:
         type: str,
         title: str,
         description: str,
-        severity: str = 'INFO'
+        severity: str = 'INFO',
+        action_type: str = None,
+        products: List[str] = None,
+        rm: str = None
     ) -> None:
-        """
-        Add an alert (displayed as "insight" in UI).
-        
-        Args:
-            client_id: Client identifier
-            type: Insight type (mapped to alert_type)
-            title: Insight title (mapped to alert_type)
-            description: Insight description (mapped to reason)
-            severity: Severity level
-        """
+        """Add an insight (SIGNAL, ACTION, OUTCOME, or ALERT)."""
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            # ✅ ADD LOGGING BEFORE INSERT
-            logger.info(f"📝 Attempting to insert insight:")
-            logger.info(f"   client_id: {client_id} (len={len(client_id)})")
-            logger.info(f"   type: {type} (len={len(type)})")
-            logger.info(f"   title: {title} (len={len(title)})")
-            logger.info(f"   description: {description[:100]}... (len={len(description)})")
-            logger.info(f"   severity: {severity} (len={len(severity)})")
+            # Convert products list to comma-separated string
+            products_str = ', '.join(products) if products else None
         
             query = """
-                INSERT INTO alerts 
-                (client_id, alert_type, reason, severity)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO insights 
+                (client_id, type, severity, title, reason, action_type, products, rm)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
             """
             
             cursor.execute(query, (
                 client_id,
-                title,  # alert_type
-                description,  # reason
-                severity
+                type,
+                severity,
+                title[:200] if title else None,  # Truncate to 200
+                description[:1000] if description else None,  # Truncate
+                action_type,
+                products_str[:500] if products_str else None,  # Truncate
+                rm
             ))
+
+            insight_id = cursor.fetchone()[0]
             
             conn.commit()
             cursor.close()
             conn.close()
             
             logger.info(f"✅ Added insight for {client_id}: {title}")
+            return insight_id
             
         except Exception as e:
             logger.error(f"❌ Error adding insight: {e}")
-            # Don't raise - insights are nice-to-have
+            return None
     
-    # ========================================================================
-    # Actions
-    # ========================================================================
-    
-    def log_action(
-        self,
-        action_id: str,  # Will be ignored - PostgreSQL generates UUID
-        client_id: str,
-        action_type: str,
-        title: str,
-        description: Optional[str] = None,
-        products: Optional[List[str]] = None,
-        rm: Optional[str] = None
-    ) -> str:
-        """
-        Log an action to database.
-        
-        Args:
-            action_id: Ignored (PostgreSQL generates UUID)
-            client_id: Client identifier
-            action_type: Type of action
-            title: Action title
-            description: Action description
-            products: List of products (combined into single string)
-            rm: Relationship manager name
-            
-        Returns:
-            Generated UUID as string
-        """
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            # Note: id is auto-generated as UUID
-            # Schema has single 'product' column, not array
-            query = """
-                INSERT INTO actions 
-                (client_id, action_type, product, description, status)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id
-            """
-            
-            # Combine products into single string
-            product_str = ', '.join(products) if products else None
-            
-            # Use title as part of description if description not provided
-            full_description = description if description else title
-            
-            cursor.execute(query, (
-                client_id,
-                action_type,
-                product_str,
-                full_description,
-                'pending'
-            ))
-            
-            generated_id = cursor.fetchone()[0]
-            
-            conn.commit()
-            cursor.close()
-            conn.close()
-            
-            logger.info(f"✅ Action logged: {generated_id} for {client_id}")
-            
-            return str(generated_id)
-            
-        except Exception as e:
-            logger.error(f"❌ Error logging action: {e}")
-            raise
-    
-    def get_client_actions(
-        self,
-        client_id: str,
-        limit: int = 20
-    ) -> List[Dict[str, Any]]:
-        """
-        Get action history for client.
-        
-        Args:
-            client_id: Client identifier
-            limit: Max number of actions
-            
-        Returns:
-            List of actions with status and outcome
-        """
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            query = """
-                SELECT 
-                    id,
-                    action_type,
-                    product,
-                    description,
-                    status,
-                    outcome,
-                    outcome_description,
-                    created_at,
-                    updated_at
-                FROM actions
-                WHERE client_id = %s
-                ORDER BY created_at DESC
-                LIMIT %s
-            """
-            
-            cursor.execute(query, (client_id, limit))
-            rows = cursor.fetchall()
-            
-            actions = []
-            for row in rows:
-                actions.append({
-                    'actionId': str(row[0]),
-                    'actionType': row[1],
-                    'products': row[2].split(', ') if row[2] else [],
-                    'description': row[3],
-                    'status': row[4],
-                    'outcome': row[5],
-                    'outcomeDescription': row[6],
-                    'timestamp': row[7].isoformat() if row[7] else None,
-                    'updatedAt': row[8].isoformat() if row[8] else None
-                })
-            
-            cursor.close()
-            conn.close()
-            
-            return actions
-            
-        except Exception as e:
-            logger.error(f"❌ Error fetching actions: {e}")
-            return []
-    
-    def update_action_outcome(
-        self,
-        action_id: str,
-        outcome: str,
-        outcome_description: Optional[str] = None
-    ) -> bool:
-        """
-        Update action outcome (for Memory Bank learning).
-        
-        Args:
-            action_id: Action UUID
-            outcome: Outcome status (e.g., 'success', 'failed', 'pending')
-            outcome_description: Optional outcome details
-            
-        Returns:
-            Success status
-        """
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            query = """
-                UPDATE actions 
-                SET outcome = %s,
-                    outcome_description = %s,
-                    updated_at = %s,
-                    status = CASE 
-                        WHEN %s IN ('success', 'failed') THEN 'completed'
-                        ELSE status
-                    END
-                WHERE id = %s::uuid
-            """
-            
-            cursor.execute(query, (
-                outcome,
-                outcome_description,
-                datetime.utcnow(),
-                outcome,
-                action_id
-            ))
-            
-            conn.commit()
-            cursor.close()
-            conn.close()
-            
-            logger.info(f"✅ Updated action outcome: {action_id} -> {outcome}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Error updating action outcome: {e}")
-            return False
-    
-    def get_all_actions(
-        self,
-        status: Optional[str] = None,
-        limit: int = 100
-    ) -> List[Dict[str, Any]]:
-        """
-        Get all actions (for admin view or Memory Bank analysis).
-        
-        Args:
-            status: Optional status filter
-            limit: Max number of actions
-            
-        Returns:
-            List of all actions
-        """
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            if status:
-                query = """
-                    SELECT 
-                        id,
-                        client_id,
-                        action_type,
-                        product,
-                        description,
-                        status,
-                        outcome,
-                        created_at
-                    FROM actions
-                    WHERE status = %s
-                    ORDER BY created_at DESC
-                    LIMIT %s
-                """
-                cursor.execute(query, (status, limit))
-            else:
-                query = """
-                    SELECT 
-                        id,
-                        client_id,
-                        action_type,
-                        product,
-                        description,
-                        status,
-                        outcome,
-                        created_at
-                    FROM actions
-                    ORDER BY created_at DESC
-                    LIMIT %s
-                """
-                cursor.execute(query, (limit,))
-            
-            rows = cursor.fetchall()
-            
-            actions = []
-            for row in rows:
-                actions.append({
-                    'actionId': str(row[0]),
-                    'clientId': row[1],
-                    'actionType': row[2],
-                    'products': row[3].split(', ') if row[3] else [],
-                    'description': row[4],
-                    'status': row[5],
-                    'outcome': row[6],
-                    'timestamp': row[7].isoformat() if row[7] else None
-                })
-            
-            cursor.close()
-            conn.close()
-            
-            return actions
-            
-        except Exception as e:
-            logger.error(f"❌ Error fetching all actions: {e}")
-            return []
-            
     def get_client_timeline(
         self,
         client_id: str,
