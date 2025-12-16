@@ -233,48 +233,6 @@ class DataService:
             logger.error(f"❌ Error fetching timeline: {e}")
             return []
 
-    def _call_mcp_server(self, server_url: str, tool_name: str, arguments: dict) -> dict:
-        """Call MCP server directly via HTTP"""
-       
-        try:
-            request_body = {
-                "tool_name": tool_name,
-                "arguments": arguments
-            }
-            
-            #logger.info(f"🔗 MCP Request to {server_url}/call_tool")
-            #logger.info(f"📤 Request body: {json.dumps(request_body, indent=2)}")
-            
-            with httpx.Client(timeout=5.0) as client:
-                response = client.post(
-                    f"{server_url}/call_tool",
-                    json=request_body
-                )
-                
-                logger.info(f"📥 Response status: {response.status_code}")
-                
-                response.raise_for_status()
-                result = response.json()
-                
-                #logger.info(f"✅ Full response structure: {json.dumps(result, indent=2)}")
-                
-                if 'result' in result and 'client' in result['result']:
-                    client_data = result['result']['client']
-                    logger.info(f"✅ Extracted client data: {client_data}")
-                    return client_data
-                
-                # Fallback: return full result
-                logger.warning(f"⚠️ Unexpected response structure, returning full result")
-                return result
-                
-        except httpx.HTTPStatusError as e:
-            logger.error(f"❌ MCP HTTP error: {e}")
-            logger.error(f"❌ Response body: {e.response.text}")
-            return {}
-        except Exception as e:
-            logger.error(f"❌ MCP call failed: {e}", exc_info=True)
-            return {}
-        
     def get_client_profile_from_db(self, client_id: str) -> Dict[str, Any]:
         """
         Get latest cached client profile from database.
