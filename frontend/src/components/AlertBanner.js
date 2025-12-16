@@ -11,23 +11,18 @@ const AlertBanner = ({ alert, onDismiss }) => {
           <div>
             <div className="alert-title">Switch Probability Alert</div>
             <div className="alert-message">
-              {alert.clientId}: Switch Prob ↑ {alert.oldSwitchProb?.toFixed(2)} → {alert.newSwitchProb?.toFixed(2)} (media-driven). 
-              Client drifting Risk-Off.
+              {alert.clientId}: Switch Prob {alert.change > 0 ? '↑' : '↓'}{' '}
+              {(alert.oldSwitchProb * 100).toFixed(0)}% → {(alert.newSwitchProb * 100).toFixed(0)}%{' '}
+              ({alert.reason}). Client drifting Risk-Off.
             </div>
           </div>
         </div>
         <button 
-          className="action-btn btn-primary" 
-          style={{ 
-            width: 'auto', 
-            flex: 0, 
-            paddingTop: '6px',
-            paddingBottom: '12px',
-            lineHeight: '1'
-          }}
+          className="alert-close"
           onClick={onDismiss}
+          aria-label="Close alert"
         >
-          Take Action
+          ✕
         </button>
       </div>
     </div>
