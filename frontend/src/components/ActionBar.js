@@ -20,10 +20,11 @@ const ActionBar = ({ clientId }) => {
   const handleProposeProduct = async () => {
     try {
       await actionsAPI.create({
-        clientId: clientId,
-        actionType: 'PROPOSE_PRODUCT',
-        product: 'EURUSD Forward Strip',
-        description: 'Proposed forward strip to address EUR concentration risk'
+        client_id: clientId,  // ← snake_case
+        action_type: 'PROPOSE_PRODUCT',
+        title: 'EURUSD Forward Strip Proposal',  // ← Added title
+        description: 'Proposed forward strip to address EUR concentration risk',
+        products: ['EURUSD Forward Strip', 'Options Collar']  // ← Array
       });
       showToast('💼 Product proposed: EURUSD forward strip - logged to Insights');
     } catch (error) {
