@@ -470,3 +470,43 @@ class DataService:
         finally:
             cursor.close()
             conn.close()
+
+
+    def create_alert(
+        self,
+        client_id: str,
+        alert_type: str,
+        old_switch_prob: Optional[float] = None,
+        new_switch_prob: Optional[float] = None,
+        reason: str = "",
+        severity: str = "INFO"
+    ) -> None:
+        """Create an alert in insights table."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            query = """
+                INSERT INTO insights 
+                (client_id, type, severity, title, reason, old_switch_prob, new_switch_prob)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            cursor.execute(query, (
+                client_id,
+                'ALERT',  # type
+                severity,
+                alert_type[:200],  # title (truncated)
+                reason[:1000],  # reason (truncated)
+                old_switch_prob,
+                new_switch_prob
+            ))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            logger.info(f"✅ Created alert in insights for {client_id}: {alert_type}")
+            
+        except Exception as e:
+            logger.error(f"❌ Error creating alert: {e}")
