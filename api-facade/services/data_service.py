@@ -348,20 +348,6 @@ class DataService:
             columns = [desc[0] for desc in cursor.description]
             row_dict = dict(zip(columns, row))
             
-            # Get client metadata from MCP
-            try:
-                client_response = self._call_mcp_server(
-                    server_url=self.client_server_url,  
-                    tool_name='get_client_metadata',
-                    arguments={'client_id': client_id}
-                )
-                rm = client_response.get('rm', 'Unknown')
-                primary_exposure = client_response.get('primary_exposure', 'N/A')
-            except Exception as e:
-                logger.warning(f"Could not fetch client metadata from MCP: {e}")
-                rm = "Unknown"
-                primary_exposure = "N/A"
-            
             # SIMPLIFIED - drivers is already an array from Gemini
             drivers = row_dict.get("drivers") or []
             if not isinstance(drivers, list):
