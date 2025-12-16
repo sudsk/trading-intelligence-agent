@@ -77,7 +77,7 @@ async def stream_alerts(
                         "type": "keepalive",
                         "timestamp": now.isoformat()
                     }
-                    logger.info(f"💓 Sending keepalive (poll #{poll_count}, {seconds_since_keepalive}s since last)")
+                    # logger.info(f"💓 Sending keepalive (poll #{poll_count}, {seconds_since_keepalive}s since last)")
                     yield f"data: {json.dumps(keepalive)}\n\n"
                     last_keepalive = now
                 
