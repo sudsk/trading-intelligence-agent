@@ -50,13 +50,13 @@ async def stream_alerts(
                 poll_count += 1
                 
                 # LOG EVERY SINGLE POLL
-                logger.info(f"🔄 POLL #{poll_count} - Checking queue at {datetime.utcnow().isoformat()}")
+                # logger.info(f"🔄 POLL #{poll_count} - Checking queue at {datetime.utcnow().isoformat()}")
                 
                 # Check for pending alerts
                 alerts = alert_queue.get_pending()
                 
                 # LOG RESULT OF EVERY POLL
-                logger.info(f"🔍 POLL #{poll_count} RESULT: Found {len(alerts)} alerts")
+                # logger.info(f"🔍 POLL #{poll_count} RESULT: Found {len(alerts)} alerts")
                 
                 if len(alerts) > 0:
                     logger.info(f"🎯 ===== FOUND {len(alerts)} PENDING ALERTS IN QUEUE! =====")
@@ -82,7 +82,7 @@ async def stream_alerts(
                     last_keepalive = now
                 
                 # Poll every 1 second for faster alerts
-                logger.info(f"😴 POLL #{poll_count} COMPLETE - Sleeping 1 second...")
+                # logger.info(f"😴 POLL #{poll_count} COMPLETE - Sleeping 1 second...")
                 await asyncio.sleep(1)
                 
         except asyncio.CancelledError:
