@@ -72,33 +72,22 @@ async def log_action(
     )
     
     try:
-        # Generate action_id
-        action_id = f"ACT_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{request.client_id}"
-        
         # Log to database
-        data_service.log_action(
-            action_id=action_id,
+        insight_id = data_service.add_insight(
             client_id=request.client_id,
+            type='ACTION',
+            title=request.title[:200] if request.title else 'Action',
+            description=request.description[:1000] if request.description else '',
+            severity='INFO',
             action_type=request.action_type,
-            title=request.title,
-            description=request.description,
             products=request.products,
             rm=request.rm or 'System'
         )
         
-        # Also add to insights feed
-        data_service.add_insight(
-            client_id=request.client_id,
-            type='ACTION',
-            title=request.title,
-            description=request.description or f"Action taken: {request.action_type}",
-            severity='INFO'
-        )
-        
-        logger.info(f"✅ Action logged: {action_id}")
-        
+        logger.info(f"✅ Action logged as insight: {insight_id}")
+      
         return ActionResponse(
-            action_id=action_id,
+            action_id=str(insight_id),
             client_id=request.client_id,
             timestamp=datetime.utcnow().isoformat(),
             status="logged"
