@@ -1,7 +1,7 @@
 import React from 'react';
 import { actionsAPI } from '../services/api';
 
-const ActionBar = ({ clientId }) => {
+const ActionBar = ({ clientId, profile }) => {
   const [toast, setToast] = React.useState(null);
 
   const showToast = (message) => {
@@ -19,14 +19,26 @@ const ActionBar = ({ clientId }) => {
 
   const handleProposeProduct = async () => {
     try {
+      // Get first recommendation from NBA agent
+      const recommendation = profile?.recommendations?.[0];
+      
+      if (!recommendation) {
+        showToast('❌ No recommendations available');
+        return;
+      }
+
+      const products = recommendation.products || ['Product recommendation'];
+      const title = `${recommendation.action.replace(/_/g, ' ')} - ${products[0]}`;
+      
       await actionsAPI.create({
-        client_id: clientId,  // ← snake_case
-        action_type: 'PROPOSE_PRODUCT',
-        title: 'EURUSD Forward Strip Proposal',  // ← Added title
-        description: 'Proposed forward strip to address EUR concentration risk',
-        products: ['EURUSD Forward Strip', 'Options Collar']  // ← Array
+        client_id: clientId,
+        action_type: recommendation.action,
+        title: title,
+        description: recommendation.message,
+        products: products
       });
-      showToast('💼 Product proposed: EURUSD forward strip - logged to Insights');
+      
+      showToast(`💼 Product proposed: ${products[0]} - logged to Insights`);
     } catch (error) {
       console.error('Error proposing product:', error);
       showToast('❌ Error proposing product');
