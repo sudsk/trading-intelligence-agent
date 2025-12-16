@@ -89,27 +89,27 @@ CREATE INDEX idx_recs_client_time ON nba_recommendations(client_id, generated_at
 INSERT INTO switch_probability_history (client_id, switch_prob, confidence, segment, drivers, risk_flags, rm, primary_exposure, computed_at)
 VALUES 
   -- High switch probability (0.60-0.85) - Need attention
-  ('ACME_FX_023', 0.720, 0.850, 'Trend Follower', 
+  ('ACME_FX_023', 0.650, 0.850, 'Trend Follower', 
    '["High momentum-beta (0.85) with strong directional bias", "Shortened holding times from 5d to 2.8d average", "Recent pattern break detected in EURUSD positioning"]',
    '["sustained_deviation", "volatility_spike"]', 'Sarah Chen','GBPUSD',
    NOW() - INTERVAL '5 minutes'),
    
-  ('ATLAS_BOND_012', 0.680, 0.820, 'Trend Setter',
+  ('ATLAS_BOND_012', 0.610, 0.820, 'Trend Setter',
    '["Early positioning ahead of rate moves shows alpha", "Positive lead-lag correlation (0.72) vs market", "Duration concentration in 5-7yr sector creating risk"]',
    '["sustained_deviation"]','James Wong','EURUSD',
    NOW() - INTERVAL '2 minutes'),
    
-  ('NOVA_MACRO_045', 0.760, 0.880, 'Mean Reverter',
+  ('NOVA_MACRO_045', 0.590, 0.880, 'Mean Reverter',
    '["Frequent position flips (18/month) indicate reversal-seeking", "Counter-trend positioning in 78% of recent trades", "Recent changepoint detected - drift toward momentum trades"]',
    '["sustained_deviation", "volatility_spike", "position_concentration"]','Emma Richardson','AUDUSD',
    NOW() - INTERVAL '8 minutes'),
    
-  ('PHOENIX_CAPITAL_031', 0.810, 0.900, 'Trend Follower',
+  ('PHOENIX_CAPITAL_031', 0.560, 0.900, 'Trend Follower',
    '["Very high momentum alignment (0.89 beta) with market moves", "Ultra-short 2.3-day holding period suggests active trading", "Sharp increase in position volatility last 14 days"]',
    '["sustained_deviation", "volatility_spike", "position_concentration"]','Michael Torres','GBPUSD',
    NOW() - INTERVAL '12 minutes'),
    
-  ('SENTINEL_ASSETS_067', 0.650, 0.800, 'Hedger',
+  ('SENTINEL_ASSETS_067', 0.600, 0.800, 'Hedger',
    '["Long 42-day average holding reflects defensive mindset", "Balanced exposure maintenance with 35% hedge ratio", "Recent concentration increase in single-name positions"]',
    '["sustained_deviation", "position_concentration"]','Michael Torres','GBPUSD',
    NOW() - INTERVAL '6 minutes'),
