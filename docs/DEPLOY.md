@@ -45,9 +45,12 @@ gcloud sql connect trading-intelligence-db --user=postgres
 ## Step 2: Build & Push Container Images
 
 Option A: Using Cloud Build (Recommended)
+```
 bash# Build all images
 gcloud builds submit --config=cloudbuild.yaml
+```
 Create cloudbuild.yaml:
+
 ```
 yaml steps:
   # Frontend
