@@ -235,7 +235,11 @@ gcloud run services add-iam-policy-binding trading-mcp-client \
 ## Notes
 
 ✅ Cloud SQL: Use managed Cloud SQL.
+
 ✅ Database Connection: Uses Unix socket (/cloudsql/...) - no public IP needed
+
 ✅ Authentication: Service-to-service uses IAM, not API keys
+
 ✅ Secrets: Store GOOGLE_CLOUD_PROJECT API key in Secret Manager if needed
+
 ✅ Networking: All internal services are --no-allow-unauthenticated
